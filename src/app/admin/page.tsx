@@ -178,7 +178,7 @@ const AdminPage: React.FC = () => {
   
 
 
-  const TEXTURES_PER_PAGE = 50;
+  const TEXTURES_PER_PAGE = 60; // 能被5、8、10、12整除，确保在所有屏幕尺寸下都能填满整页
 
   useEffect(() => {
     // 检查是否为开发环境

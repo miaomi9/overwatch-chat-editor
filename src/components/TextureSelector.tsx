@@ -26,7 +26,7 @@ const TextureSelector: React.FC<TextureSelectorProps> = ({ onTextureSelect, text
   const [currentPage, setCurrentPage] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
   
-  const itemsPerPage = 16;
+  const itemsPerPage = 18; // 6列 × 3行 = 18个项目，确保每页都是完整的
   const totalPages = Math.ceil(filteredTextures.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const currentTextures = filteredTextures.slice(startIndex, startIndex + itemsPerPage);
@@ -71,11 +71,12 @@ const TextureSelector: React.FC<TextureSelectorProps> = ({ onTextureSelect, text
 
   if (isLoading) {
     return (
-      <div className="p-4 bg-gradient-to-r from-orange-50 to-yellow-50 border-b border-orange-200">
-        <div className="flex items-center justify-center py-8">
-          <div className="text-gray-400 flex items-center justify-center">
-            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-orange-500 mr-3"></div>
-            加载纹理中...
+      <div className="p-6 bg-gray-900/80 backdrop-blur-sm border border-orange-500/20 rounded-xl">
+        <div className="flex items-center justify-center py-12">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-4 border-orange-500/30 border-t-orange-500 mx-auto mb-4"></div>
+            <p className="text-gray-300 text-sm">加载纹理数据中...</p>
+            <p className="text-gray-500 text-xs mt-2">请稍候，正在获取纹理信息</p>
           </div>
         </div>
       </div>

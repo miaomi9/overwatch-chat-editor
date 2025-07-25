@@ -31,35 +31,39 @@ const rgbToHex = (r: number, g: number, b: number): string => {
 };
 
 // 解析守望先锋代码为元素数组
-export const parseOverwatchCode = async (code: string): Promise<Element[]> => {
+export const parseOverwatchCode = async (code: string, existingTextures?: Texture[]): Promise<Element[]> => {
   const elements: Element[] = [];
   
-  // 获取纹理数据用于匹配TXC代码
-  let textures: Texture[] = [];
-  try {
-    const texturesResponse = await fetch('/api/textures');
-    const texturesData = await texturesResponse.json();
-    
-    const dataResponse = await fetch('/api/texture-data');
-    const data = await dataResponse.json();
-    
-    textures = texturesData.textures.map((texture: any) => {
-      const info = data.textures[texture.fileName.replace('.png', '')] || {
-        name: texture.fileName.replace('.png', ''),
-        category: '未分类'
-      };
+  // 使用传入的纹理数据，如果没有则请求
+  let textures: Texture[] = existingTextures || [];
+  
+  // 只有在没有传入纹理数据时才请求
+  if (!existingTextures || existingTextures.length === 0) {
+    try {
+      const texturesResponse = await fetch('/api/textures');
+      const texturesData = await texturesResponse.json();
       
-      return {
-        id: texture.fileName.replace('.png', ''),
-        fileName: texture.fileName,
-        imagePath: texture.imagePath,
-        txCode: texture.txCode,
-        name: info.name,
-        category: info.category
-      };
-    });
-  } catch (error) {
-    console.error('Failed to load textures for parsing:', error);
+      const dataResponse = await fetch('/api/texture-data');
+      const data = await dataResponse.json();
+      
+      textures = texturesData.textures.map((texture: any) => {
+        const info = data.textures[texture.fileName.replace('.png', '')] || {
+          name: texture.fileName.replace('.png', ''),
+          category: '未分类'
+        };
+        
+        return {
+          id: texture.fileName.replace('.png', ''),
+          fileName: texture.fileName,
+          imagePath: texture.imagePath,
+          txCode: texture.txCode,
+          name: info.name,
+          category: info.category
+        };
+      });
+    } catch (error) {
+      console.error('Failed to load textures for parsing:', error);
+    }
   }
   
   // 正则表达式匹配不同类型的代码

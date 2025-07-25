@@ -29,16 +29,29 @@ interface Element {
   texture?: Texture;
 }
 
+// 纹理数据缓存
+let texturesCache: Texture[] | null = null;
+
 const ChatEditor: React.FC = () => {
   const [elements, setElements] = useState<Element[]>([]);
   const [textures, setTextures] = useState<Texture[]>([]);
   const [activeTab, setActiveTab] = useState<'template' | 'texture' | 'text'>('template');
+  const [isLoadingTextures, setIsLoadingTextures] = useState(true);
 
 
   // 加载纹理数据
   useEffect(() => {
     const loadTextures = async () => {
       try {
+        setIsLoadingTextures(true);
+        
+        // 检查缓存
+        if (texturesCache) {
+          setTextures(texturesCache);
+          setIsLoadingTextures(false);
+          return;
+        }
+        
         // 加载纹理文件列表
         const texturesResponse = await fetch('/api/textures');
         const texturesData = await texturesResponse.json();
@@ -64,9 +77,13 @@ const ChatEditor: React.FC = () => {
           };
         });
         
+        // 缓存数据
+        texturesCache = mergedTextures;
         setTextures(mergedTextures);
       } catch (error) {
         console.error('Failed to load textures:', error);
+      } finally {
+        setIsLoadingTextures(false);
       }
     };
 
@@ -151,9 +168,9 @@ const ChatEditor: React.FC = () => {
     for (const element of templateElements) {
       // 检查是否是包含守望先锋代码的文本元素
       if (element.type === 'text' && element.content && containsOverwatchCode(element.content)) {
-        // 解析守望先锋代码为元素数组
+        // 解析守望先锋代码为元素数组，传递已加载的纹理数据
         try {
-          const parsedElements = await parseOverwatchCode(element.content);
+          const parsedElements = await parseOverwatchCode(element.content, textures);
           newElements.push(...parsedElements);
         } catch (error) {
           console.error('Failed to parse Overwatch code:', error);
@@ -206,7 +223,25 @@ const ChatEditor: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-orange-900 p-4">
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-orange-900 p-4 relative">
+      {/* Loading 遮罩 */}
+      {isLoadingTextures && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center">
+          <div className="bg-gray-900/90 border border-orange-500/30 rounded-xl p-8 text-center max-w-md mx-4">
+            <div className="animate-spin rounded-full h-16 w-16 border-4 border-orange-500/30 border-t-orange-500 mx-auto mb-6"></div>
+            <h3 className="text-xl font-bold text-white mb-2">加载纹理数据中...</h3>
+            <p className="text-gray-400 text-sm mb-4">
+              正在从服务器获取纹理信息，请稍候
+            </p>
+            <div className="bg-gray-800/50 rounded-lg p-3">
+              <p className="text-xs text-gray-500">
+                💡 纹理数据较大，首次加载可能需要一些时间
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+      
       <div className="max-w-7xl mx-auto">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-4xl font-bold text-center text-white bg-gradient-to-r from-orange-400 to-orange-600 bg-clip-text text-transparent">守望先锋聊天编辑器</h1>
