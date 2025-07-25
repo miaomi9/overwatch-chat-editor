@@ -4,10 +4,11 @@ import React, { useState, useEffect } from 'react';
 import TextureSelector from './TextureSelector';
 import TextInput from './TextInput';
 import TemplateSelector from './TemplateSelector';
-
+import Toast from './Toast';
 import Preview from './Preview';
 import CodeGenerator from './CodeGenerator';
 import { parseOverwatchCode, containsOverwatchCode } from '@/utils/overwatchCodeParser';
+import { useToast } from '@/hooks/useToast';
 
 interface Texture {
   id: string;
@@ -37,6 +38,9 @@ const ChatEditor: React.FC = () => {
   const [textures, setTextures] = useState<Texture[]>([]);
   const [activeTab, setActiveTab] = useState<'template' | 'texture' | 'text'>('template');
   const [isLoadingTextures, setIsLoadingTextures] = useState(true);
+  const [showSaveDialog, setShowSaveDialog] = useState(false);
+  const [templateName, setTemplateName] = useState('');
+  const { toast, showSuccess, showError, showWarning, hideToast } = useToast();
 
 
   // 加载纹理数据
@@ -195,16 +199,21 @@ const ChatEditor: React.FC = () => {
   // 保存到本地缓存
   const handleSaveToLocal = () => {
     if (elements.length === 0) {
-      alert('没有内容可以保存');
+      showWarning('没有内容可以保存');
+      return;
+    }
+    setShowSaveDialog(true);
+  };
+
+  const handleConfirmSave = () => {
+    if (!templateName.trim()) {
+      showWarning('请输入模板名称');
       return;
     }
 
-    const templateName = prompt('请输入模板名称:');
-    if (!templateName) return;
-
     const template = {
       id: Date.now().toString(),
-      name: templateName,
+      name: templateName.trim(),
       description: `本地模板 - ${new Date().toLocaleDateString()}`,
       elements: elements,
       category: '我的模板',
@@ -219,11 +228,26 @@ const ChatEditor: React.FC = () => {
     // 保存到localStorage
     localStorage.setItem('userTemplates', JSON.stringify(existingTemplates));
     
-    alert('模板已保存到本地缓存！\n注意：更新后可能会丢失');
+    showSuccess('模板已保存到本地缓存！\n注意：更新后可能会丢失');
+    setShowSaveDialog(false);
+    setTemplateName('');
+  };
+
+  const handleCancelSave = () => {
+    setShowSaveDialog(false);
+    setTemplateName('');
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-orange-900 p-4 relative">
+      {/* Toast 组件 */}
+      <Toast
+        message={toast.message}
+        type={toast.type}
+        isVisible={toast.isVisible}
+        onClose={hideToast}
+      />
+      
       {/* Loading 遮罩 */}
       {isLoadingTextures && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center">
@@ -237,6 +261,43 @@ const ChatEditor: React.FC = () => {
               <p className="text-xs text-gray-500">
                 💡 纹理数据较大，首次加载可能需要一些时间
               </p>
+            </div>
+          </div>
+        </div>
+      )}
+      
+      {/* 保存模板对话框 */}
+      {showSaveDialog && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center">
+          <div className="bg-gray-900/95 border border-orange-500/30 rounded-xl p-6 max-w-md mx-4 w-full">
+            <h3 className="text-xl font-bold text-white mb-4">保存为模板</h3>
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-300 mb-2">
+                模板名称
+              </label>
+              <input
+                type="text"
+                value={templateName}
+                onChange={(e) => setTemplateName(e.target.value)}
+                placeholder="请输入模板名称..."
+                className="w-full px-3 py-2 bg-gray-800/50 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                autoFocus
+              />
+            </div>
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={handleCancelSave}
+                className="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors"
+              >
+                取消
+              </button>
+              <button
+                onClick={handleConfirmSave}
+                className="px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-lg transition-colors"
+                disabled={!templateName.trim()}
+              >
+                保存
+              </button>
             </div>
           </div>
         </div>

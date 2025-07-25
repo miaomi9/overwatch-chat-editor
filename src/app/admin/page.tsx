@@ -3,6 +3,8 @@
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import TemplateManager from '@/components/TemplateManager';
+import Toast from '@/components/Toast';
+import { useToast } from '@/hooks/useToast';
 import { getTextureName, clearTextureDataCache } from '@/data/textureNames';
 import { getTextureCategory, getAllCategoriesAsync, clearCategoryDataCache } from '@/data/textureCategories';
 
@@ -37,6 +39,7 @@ const EditModal: React.FC<EditModalProps> = ({ texture, categories, onSave, onCl
   const [category, setCategory] = useState('');
   const [newCategory, setNewCategory] = useState('');
   const [useNewCategory, setUseNewCategory] = useState(false);
+  const { toast, showWarning } = useToast();
 
   useEffect(() => {
     if (texture) {
@@ -52,7 +55,7 @@ const EditModal: React.FC<EditModalProps> = ({ texture, categories, onSave, onCl
     
     const finalCategory = useNewCategory ? newCategory : category;
     if (!name.trim() || !finalCategory.trim()) {
-      alert('请填写名称和分类');
+      showWarning('请填写名称和分类');
       return;
     }
     
@@ -160,6 +163,14 @@ const EditModal: React.FC<EditModalProps> = ({ texture, categories, onSave, onCl
             保存
           </button>
         </div>
+        
+        {/* Toast 组件 */}
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          isVisible={toast.isVisible}
+          onClose={() => {}}
+        />
       </div>
     </div>
   );
@@ -175,6 +186,7 @@ const AdminPage: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState('全部');
   const [currentPage, setCurrentPage] = useState(1);
   const [isDev, setIsDev] = useState(false);
+  const { toast, showSuccess, showError } = useToast();
   
 
 
@@ -249,13 +261,13 @@ const AdminPage: React.FC = () => {
         
         // 重新加载数据
         await loadData();
-        alert('保存成功！');
+        showSuccess('保存成功！');
       } else {
-        alert('保存失败！');
+        showError('保存失败！');
       }
     } catch (error) {
       console.error('Error saving texture:', error);
-      alert('保存失败！');
+      showError('保存失败！');
     }
   };
 
@@ -466,6 +478,14 @@ const AdminPage: React.FC = () => {
         categories={textureData.categories}
         onSave={handleSaveTexture}
         onClose={() => setEditingTexture(null)}
+      />
+      
+      {/* Toast 组件 */}
+      <Toast
+        message={toast.message}
+        type={toast.type}
+        isVisible={toast.isVisible}
+        onClose={() => {}}
       />
     </div>
   );

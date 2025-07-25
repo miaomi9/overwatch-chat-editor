@@ -1,6 +1,8 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import Toast from './Toast';
+import { useToast } from '@/hooks/useToast';
 
 interface TemplateElement {
   id: string;
@@ -51,6 +53,11 @@ const TemplateManager: React.FC<TemplateManagerProps> = ({ currentElements = [],
   const [useCurrentElements, setUseCurrentElements] = useState(false);
   const [useOverwatchCode, setUseOverwatchCode] = useState(false);
   const [overwatchCode, setOverwatchCode] = useState('');
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [templateToDelete, setTemplateToDelete] = useState<string | null>(null);
+  const [showCategoryDialog, setShowCategoryDialog] = useState(false);
+  const [newCategoryName, setNewCategoryName] = useState('');
+  const { toast, showSuccess, showError, showWarning, hideToast } = useToast();
 
   useEffect(() => {
     loadTemplates();
@@ -71,7 +78,7 @@ const TemplateManager: React.FC<TemplateManagerProps> = ({ currentElements = [],
 
   const handleSaveTemplate = async () => {
     if (!newTemplate.name.trim() || !newTemplate.description.trim()) {
-      alert('请填写模板名称和描述');
+      showWarning('请填写模板名称和描述');
       return;
     }
 
@@ -108,13 +115,13 @@ const TemplateManager: React.FC<TemplateManagerProps> = ({ currentElements = [],
         setUseCurrentElements(false);
         setUseOverwatchCode(false);
         setOverwatchCode('');
-        alert('模板保存成功！');
+        showSuccess('模板保存成功！');
       } else {
-        alert('保存失败！');
+        showError('保存失败！');
       }
     } catch (error) {
       console.error('Error saving template:', error);
-      alert('保存失败！');
+      showError('保存失败！');
     }
   };
 
@@ -160,47 +167,144 @@ const TemplateManager: React.FC<TemplateManagerProps> = ({ currentElements = [],
         setEditingTemplate(null);
         setEditMode('json');
         setEditOverwatchCode('');
-        alert('模板更新成功！');
+        showSuccess('模板更新成功！');
       } else {
-        alert('更新失败，请重试');
+        showError('更新失败，请重试');
       }
     } catch (error) {
       console.error('更新模板失败:', error);
-      alert('更新失败，请重试');
+      showError('更新失败，请重试');
     }
   };
 
 
 
-  const handleDeleteTemplate = async (templateId: string) => {
-    if (!confirm('确定要删除这个模板吗？')) return;
+  const handleDeleteTemplate = (templateId: string) => {
+    setTemplateToDelete(templateId);
+    setShowDeleteDialog(true);
+  };
+
+  const confirmDeleteTemplate = async () => {
+    if (!templateToDelete) return;
 
     try {
-      const response = await fetch(`/api/templates?id=${templateId}`, {
+      const response = await fetch(`/api/templates?id=${templateToDelete}`, {
         method: 'DELETE',
       });
       
       if (response.ok) {
         await loadTemplates();
-        alert('模板删除成功！');
+        showSuccess('模板删除成功！');
       } else {
-        alert('删除失败！');
+        showError('删除失败！');
       }
     } catch (error) {
       console.error('Error deleting template:', error);
-      alert('删除失败！');
+      showError('删除失败！');
+    } finally {
+      setShowDeleteDialog(false);
+      setTemplateToDelete(null);
     }
   };
 
+  const cancelDeleteTemplate = () => {
+    setShowDeleteDialog(false);
+    setTemplateToDelete(null);
+  };
+
   const handleAddNewCategory = () => {
-    const newCategory = prompt('请输入新分类名称：');
-    if (newCategory && newCategory.trim() && !templateCategories.includes(newCategory.trim())) {
-      setTemplateCategories([...templateCategories, newCategory.trim()]);
+    setShowCategoryDialog(true);
+  };
+
+  const confirmAddCategory = () => {
+    if (newCategoryName.trim() && !templateCategories.includes(newCategoryName.trim())) {
+      setTemplateCategories([...templateCategories, newCategoryName.trim()]);
+      showSuccess('分类添加成功！');
+    } else if (templateCategories.includes(newCategoryName.trim())) {
+      showWarning('该分类已存在！');
+    } else {
+      showWarning('请输入分类名称！');
     }
+    setShowCategoryDialog(false);
+    setNewCategoryName('');
+  };
+
+  const cancelAddCategory = () => {
+    setShowCategoryDialog(false);
+    setNewCategoryName('');
   };
 
   return (
     <div className="bg-white rounded-lg shadow p-4">
+      {/* Toast 组件 */}
+      <Toast
+        message={toast.message}
+        type={toast.type}
+        isVisible={toast.isVisible}
+        onClose={hideToast}
+      />
+      
+      {/* 删除确认对话框 */}
+      {showDeleteDialog && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center">
+          <div className="bg-white rounded-xl p-6 max-w-md mx-4 w-full">
+            <h3 className="text-xl font-bold text-gray-800 mb-4">确认删除</h3>
+            <p className="text-gray-600 mb-6">确定要删除这个模板吗？此操作无法撤销。</p>
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={cancelDeleteTemplate}
+                className="px-4 py-2 bg-gray-300 hover:bg-gray-400 text-gray-800 rounded-lg transition-colors"
+              >
+                取消
+              </button>
+              <button
+                onClick={confirmDeleteTemplate}
+                className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors"
+              >
+                删除
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      
+      {/* 添加分类对话框 */}
+      {showCategoryDialog && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center">
+          <div className="bg-white rounded-xl p-6 max-w-md mx-4 w-full">
+            <h3 className="text-xl font-bold text-gray-800 mb-4">添加新分类</h3>
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                分类名称
+              </label>
+              <input
+                type="text"
+                value={newCategoryName}
+                onChange={(e) => setNewCategoryName(e.target.value)}
+                placeholder="请输入分类名称..."
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                autoFocus
+              />
+            </div>
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={cancelAddCategory}
+                className="px-4 py-2 bg-gray-300 hover:bg-gray-400 text-gray-800 rounded-lg transition-colors"
+              >
+                取消
+              </button>
+              <button
+                onClick={confirmAddCategory}
+                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+                disabled={!newCategoryName.trim()}
+              >
+                添加
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-xl font-semibold text-gray-800">模板管理</h2>
         <div className="flex gap-2">

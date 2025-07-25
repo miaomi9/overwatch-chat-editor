@@ -1,6 +1,8 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import Toast from './Toast';
+import { useToast } from '../hooks/useToast';
 
 interface TemplateElement {
   id: string;
@@ -88,15 +90,76 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({ onTemplateApply }) 
     }
   };
 
-  // 复制模板内容
+  // 颜色转换函数
+  const hexToRgb = (hex: string) => {
+    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    return result ? {
+      r: parseInt(result[1], 16),
+      g: parseInt(result[2], 16),
+      b: parseInt(result[3], 16)
+    } : null;
+  };
+
+  const toHex = (n: number) => {
+    return n.toString(16).padStart(2, '0').toUpperCase();
+  };
+
+  const lerp = (start: number, end: number, t: number) => {
+    return Math.round(start + (end - start) * t);
+  };
+
+  // 创建渐变文字
+  const createGradientText = (text: string, startColor: {r: number, g: number, b: number}, endColor: {r: number, g: number, b: number}) => {
+    let result = '';
+    for (let i = 0; i < text.length; i++) {
+      const t = text.length === 1 ? 0 : i / (text.length - 1);
+      const r = lerp(startColor.r, endColor.r, t);
+      const g = lerp(startColor.g, endColor.g, t);
+      const b = lerp(startColor.b, endColor.b, t);
+      result += `<FG${toHex(r)}${toHex(g)}${toHex(b)}FF>${text[i]}`;
+    }
+    return result;
+  };
+
+  // 生成守望先锋代码
+  const generateOverwatchCode = (elements: TemplateElement[]) => {
+    return elements.map(element => {
+      switch (element.type) {
+        case 'text':
+          // 如果content已经包含守望先锋代码，直接返回
+          return element.content || '';
+        case 'color':
+          const rgb = hexToRgb(element.color || '#ffffff');
+          if (rgb && element.content) {
+            return `<FG${toHex(rgb.r)}${toHex(rgb.g)}${toHex(rgb.b)}FF>${element.content}`;
+          }
+          return element.content || '';
+        case 'gradient':
+          const startRgb = hexToRgb(element.gradientStartColor || '#ffffff');
+          const endRgb = hexToRgb(element.gradientEndColor || '#ffffff');
+          if (startRgb && endRgb && element.content) {
+            return createGradientText(element.content, startRgb, endRgb);
+          }
+          return element.content || '';
+        case 'texture':
+          return element.texture?.txCode || '';
+        default:
+          return '';
+      }
+    }).filter(code => code.trim() !== '').join(' ');
+  };
+
+  const { toast, showSuccess, showError } = useToast();
+
+  // 复制模板内容（守望先锋代码格式）
   const handleCopyTemplate = async (template: Template) => {
     try {
-      const templateText = JSON.stringify(template.elements, null, 2);
-      await navigator.clipboard.writeText(templateText);
-      alert('模板内容已复制到剪贴板！');
+      const overwatchCode = generateOverwatchCode(template.elements);
+      await navigator.clipboard.writeText(overwatchCode);
+      showSuccess('守望先锋代码已复制到剪贴板！');
     } catch (error) {
       console.error('复制失败:', error);
-      alert('复制失败，请重试');
+      showError('复制失败，请重试');
     }
   };
 
@@ -253,6 +316,14 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({ onTemplateApply }) 
           ))
         )}
       </div>
+      
+      {/* Toast 组件 */}
+      <Toast
+        message={toast.message}
+        type={toast.type}
+        isVisible={toast.isVisible}
+        onClose={() => {}}
+      />
     </div>
   );
 };
