@@ -1,0 +1,55 @@
+{
+  "templates": {
+    "template_1753441670405_cwer9x68z": {
+      "id": "template_1753441670405_cwer9x68z",
+      "name": "给你佛珠打掉",
+      "description": "比较冒犯禅雅塔玩家",
+      "elements": [
+        {
+          "id": "1753441669017",
+          "type": "text",
+          "content": "<FGFF0000FF>给你 <TXC00000000001334> <FGFF0000FF>都打掉"
+        }
+      ],
+      "category": "游戏",
+      "createdAt": "2025-07-25T11:07:50.405Z",
+      "updatedAt": "2025-07-25T11:07:50.405Z"
+    },
+    "template_1753441796318_npq9jrb0o": {
+      "id": "template_1753441796318_npq9jrb0o",
+      "name": "GG模板",
+      "description": "友善游戏！",
+      "elements": [
+        {
+          "id": "1753441795022",
+          "type": "text",
+          "content": "<FG00FF00FF>GG  大家都很棒！  <FG4FACFEFF>下<FG3BBEFEFF>次<FG28CFFEFF>再<FG14E1FEFF>战<FG00F2FEFF>！"
+        }
+      ],
+      "category": "问候",
+      "createdAt": "2025-07-25T11:09:56.318Z",
+      "updatedAt": "2025-07-25T11:09:56.318Z"
+    },
+    "template_1753442062248_setsfw2p7": {
+      "id": "template_1753442062248_setsfw2p7",
+      "name": "NO摩西",
+      "description": "人人都是摩西",
+      "elements": [
+        {
+          "id": "1753442062217",
+          "type": "text",
+          "content": "<FGF50000FF>NO <TXC000000000385C3>"
+        }
+      ],
+      "category": "游戏",
+      "createdAt": "2025-07-25T11:14:22.248Z",
+      "updatedAt": "2025-07-25T11:14:22.248Z"
+    }
+  },
+  "categories": [
+    "问候",
+    "游戏",
+    "庆祝",
+    "其他"
+  ]
+}
