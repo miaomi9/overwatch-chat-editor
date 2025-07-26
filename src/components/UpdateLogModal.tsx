@@ -11,10 +11,31 @@ const UpdateLogModal: React.FC<UpdateLogModalProps> = ({ isVisible, onClose }) =
   const [dontShowAgain, setDontShowAgain] = useState(false);
 
   // 当前版本号
-  const CURRENT_VERSION = '1.1.0';
+  const CURRENT_VERSION = '1.2.0';
   
   // 更新日志内容
   const updateLogs = [
+    {
+      version: '1.2.0',
+      date: '2025-07-27',
+      title: '新纹理资源与界面优化更新',
+      features: [
+        '🖼️ 新增大量游戏纹理资源，丰富聊天表达方式',
+        '🎨 全新优化的模板选择界面，支持网格和列表视图切换',
+        '📱 纹理选择器界面重构，每页显示更多内容',
+        '🔍 改进纹理名称显示，支持长名称自动换行',
+        '⭐ 新增GitHub开源项目链接，方便用户参与贡献',
+        '🎯 优化教程区域布局，更加紧凑美观',
+        '🌟 更新品牌图标，使用官方SVG资源'
+      ],
+      improvements: [
+        '模板选择器支持3列网格布局，提升浏览效率',
+        '纹理选择器从18个/页提升至40个/页，减少翻页次数',
+        '长纹理名称支持2行显示，避免文字截断',
+        '教程链接采用横向布局，节省垂直空间',
+        '统一使用高质量图标资源，提升视觉体验'
+      ]
+    },
     {
       version: '1.1.0',
       date: '2025-07-26',

@@ -44,6 +44,81 @@
       "category": "游戏",
       "createdAt": "2025-07-25T11:14:22.248Z",
       "updatedAt": "2025-07-25T11:14:22.248Z"
+    },
+    "template_1753550346437_1ztjgyodd": {
+      "id": "template_1753550346437_1ztjgyodd",
+      "name": "拉玛刹语录",
+      "description": "闭嘴！",
+      "elements": [
+        {
+          "id": "1753550518041",
+          "type": "text",
+          "content": "<FGA240F2FF>闭嘴!我在<TXC000000000059F1>里使用<TXC00000000038497>,如果你惹怒了我,我将使用<TXC0000000002D71D>对你造成65点高额伤害,如果你企图反抗,我将使用<TXC0000000002E842>抱头痛哭"
+        }
+      ],
+      "category": "游戏",
+      "createdAt": "2025-07-26T17:19:06.437Z",
+      "updatedAt": "2025-07-26T17:21:58.073Z"
+    },
+    "template_1753551020427_1aq07yz2m": {
+      "id": "template_1753551020427_1aq07yz2m",
+      "name": "我是娜娜",
+      "description": "爱护老人",
+      "elements": [
+        {
+          "id": "1753551020417",
+          "type": "text",
+          "content": "<FG0000FFFF>你好，我是娜娜<TXC000000000385C6>，请不要选出<TXC00000000038495><TXC000000000489CF><TXC00000000038492><FGFF0000FF>请关爱老人"
+        }
+      ],
+      "category": "游戏",
+      "createdAt": "2025-07-26T17:30:20.427Z",
+      "updatedAt": "2025-07-26T17:30:20.427Z"
+    },
+    "template_1753551560562_bd35d7lpp": {
+      "id": "template_1753551560562_bd35d7lpp",
+      "name": "铁拳锤安娜",
+      "description": "简单粗暴",
+      "elements": [
+        {
+          "id": "1753551560551",
+          "type": "text",
+          "content": "<TXC00000000038495> <TXC0000000000F446><TXC000000000385C6>"
+        }
+      ],
+      "category": "游戏",
+      "createdAt": "2025-07-26T17:39:20.562Z",
+      "updatedAt": "2025-07-26T17:39:20.562Z"
+    },
+    "template_1753551592496_vwb6z22sq": {
+      "id": "template_1753551592496_vwb6z22sq",
+      "name": "莫伊拉小作文",
+      "description": "屈服于我的意志吧",
+      "elements": [
+        {
+          "id": "1753551592473",
+          "type": "text",
+          "content": "闭嘴!我在<TXC000000000059F1>里使用<TXC000000000385C8>，如果你激怒了我，我将使用<TXC00000000011DD6>对你进行枯萎凋零，痛苦在所难免，<TXC00000000011D87>屈服于我的意志吧"
+        }
+      ],
+      "category": "游戏",
+      "createdAt": "2025-07-26T17:39:52.496Z",
+      "updatedAt": "2025-07-26T17:39:52.496Z"
+    },
+    "template_1753551610150_zq9d80c0v": {
+      "id": "template_1753551610150_zq9d80c0v",
+      "name": "我要玩摩西",
+      "description": "YES摩西",
+      "elements": [
+        {
+          "id": "1753551610134",
+          "type": "text",
+          "content": "<FGFF8040FF>我<FGFF7451FF>要<FGFF6963FF>玩<FGFF5D74FF>摩<FGFF5185FF>西<FGFF4697FF>女<FGFF3AA8FF>我<FGFF2FBAFF>要<FGFF23CBFF>玩<FGFF17DCFF>摩<FGFF0CEEFF>西<FGFF00FFFF>女"
+        }
+      ],
+      "category": "其他",
+      "createdAt": "2025-07-26T17:40:10.150Z",
+      "updatedAt": "2025-07-26T17:40:10.150Z"
     }
   },
   "categories": [

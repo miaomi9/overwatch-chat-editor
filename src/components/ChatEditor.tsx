@@ -39,7 +39,7 @@ const ChatEditor: React.FC = () => {
   const { toast, showSuccess, showError, showWarning, hideToast } = useToast();
 
   // 当前版本号
-  const CURRENT_VERSION = '1.1.0';
+  const CURRENT_VERSION = '1.2.0';
 
   // 检查是否需要显示更新日志
   useEffect(() => {
@@ -288,24 +288,51 @@ const ChatEditor: React.FC = () => {
       
       <div className="max-w-7xl mx-auto">
         <div className="flex justify-between items-center mb-6">
-          <div className="flex flex-col">
-            <h1 className="text-4xl font-bold text-center text-white bg-gradient-to-r from-orange-400 to-orange-600 bg-clip-text text-transparent">守望先锋聊天编辑器</h1>
-            <div className="mt-2 flex items-center justify-center gap-2">
-              <span className="text-gray-400 text-sm">不会使用？</span>
-              <a 
-                href="https://www.bilibili.com/video/BV1ncbRzGEJW/?share_source=copy_web&vd_source=46be8e2fa7c30d3bdf853b9c4adcd69b"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-orange-400 hover:text-orange-300 text-sm underline transition-colors flex items-center gap-1"
-              >
-                <span>📺</span>
-                查看视频食用教程！
+          <div className="flex items-center gap-6">
+            <div className="flex items-center gap-3">
+              <img src="https://ld5.res.netease.com/images/20241213/1734074185668_1f8923e771.svg" alt="Overwatch" className="w-10 h-10" />
+              <h1 className="text-4xl font-bold text-white bg-gradient-to-r from-orange-400 to-orange-600 bg-clip-text text-transparent">守望先锋聊天编辑器</h1>
+            </div>
+            
+            {/* 使用教程和项目信息 - 横向布局 */}
+            <div className="flex items-center gap-3">
+              {/* 视频教程 */}
+               <a 
+                 href="https://www.bilibili.com/video/BV1ncbRzGEJW/?share_source=copy_web&vd_source=46be8e2fa7c30d3bdf853b9c4adcd69b"
+                 target="_blank"
+                 rel="noopener noreferrer"
+                 className="flex items-center gap-2 px-3 py-2 bg-gradient-to-r from-blue-600/20 to-blue-700/20 border border-blue-500/30 rounded-lg hover:from-blue-600/30 hover:to-blue-700/30 hover:border-blue-400/50 transition-all duration-200 group"
+               >
+                 <img src="https://ts3.tc.mm.bing.net/th/id/ODF.HcIfqnk4n-lbffGcaqDC2w?w=32&h=32&qlt=90&pcl=fffffa&o=6&cb=thwsc4&pid=1.2" alt="Bilibili" className="w-5 h-5" />
+                 <span className="text-white text-sm font-medium">视频教程</span>
+                <div className="text-blue-400 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                  </svg>
+                </div>
+              </a>
+              
+              {/* 开源项目 */}
+               <a 
+                 href="https://github.com/MapleOAO/overwatch-chat-editor"
+                 target="_blank"
+                 rel="noopener noreferrer"
+                 className="flex items-center gap-2 px-3 py-2 bg-gradient-to-r from-green-600/20 to-green-700/20 border border-green-500/30 rounded-lg hover:from-green-600/30 hover:to-green-700/30 hover:border-green-400/50 transition-all duration-200 group"
+               >
+                 <img src="https://ts3.tc.mm.bing.net/th/id/ODF.bYAvaN8MCaSZfP0o7q_Z_w?w=32&h=32&qlt=90&pcl=fffffc&o=6&cb=thwsc4&pid=1.2" alt="GitHub" className="w-5 h-5" />
+                 <span className="text-white text-sm font-medium">GitHub</span>
+                <div className="text-green-400 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                  </svg>
+                </div>
               </a>
             </div>
           </div>
+          
           <button
             onClick={handleSaveToLocal}
-            className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 text-sm"
+            className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 text-sm transition-colors"
             disabled={elements.length === 0}
             title={elements.length === 0 ? '请先添加一些元素' : '保存到本地缓存（更新后可能丢失）'}
           >

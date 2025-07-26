@@ -101,6 +101,61 @@ export async function POST(request: NextRequest) {
   }
 }
 
+// 更新模板
+export async function PUT(request: NextRequest) {
+  try {
+    const { id, name, description, elements, category } = await request.json();
+    
+    if (!id || !name || !description || !elements || !Array.isArray(elements)) {
+      return NextResponse.json(
+        { error: 'Missing required fields' },
+        { status: 400 }
+      );
+    }
+
+    // 读取现有数据
+    const fileContent = fs.readFileSync(TEMPLATES_FILE_PATH, 'utf-8');
+    const data: TemplatesData = JSON.parse(fileContent);
+
+    // 检查模板是否存在
+    if (!data.templates[id]) {
+      return NextResponse.json(
+        { error: 'Template not found' },
+        { status: 404 }
+      );
+    }
+
+    // 更新模板
+    const updatedTemplate: Template = {
+      ...data.templates[id],
+      name,
+      description,
+      elements,
+      category: category || data.templates[id].category || '其他',
+      updatedAt: new Date().toISOString()
+    };
+
+    data.templates[id] = updatedTemplate;
+
+    // 确保分类存在
+    if (category && !data.categories.includes(category)) {
+      data.categories.push(category);
+      data.categories.sort();
+    }
+
+    // 写回文件
+    fs.writeFileSync(TEMPLATES_FILE_PATH, JSON.stringify(data, null, 2), 'utf-8');
+
+    return NextResponse.json({ success: true, template: updatedTemplate });
+  } catch (error) {
+    console.error('Error updating template:', error);
+    return NextResponse.json(
+      { error: 'Failed to update template' },
+      { status: 500 }
+    );
+  }
+}
+
 // 删除模板
 export async function DELETE(request: NextRequest) {
   try {

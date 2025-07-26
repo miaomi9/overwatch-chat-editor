@@ -5,6 +5,44 @@ import Image from 'next/image';
 import { getTextureName } from '@/data/textureNames';
 import { getTextureCategory } from '@/data/textureCategories';
 
+// 添加自定义样式
+const customStyles = `
+  .line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .custom-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(249, 115, 22, 0.5) rgba(55, 65, 81, 0.3);
+  }
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: rgba(55, 65, 81, 0.3);
+    border-radius: 3px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(249, 115, 22, 0.5);
+    border-radius: 3px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: rgba(249, 115, 22, 0.7);
+  }
+`;
+
+// 注入样式到文档头部
+if (typeof document !== 'undefined') {
+  const styleElement = document.createElement('style');
+  styleElement.textContent = customStyles;
+  if (!document.head.querySelector('style[data-texture-selector]')) {
+    styleElement.setAttribute('data-texture-selector', 'true');
+    document.head.appendChild(styleElement);
+  }
+}
+
 interface Texture {
   id: string;
   fileName: string;
@@ -26,7 +64,7 @@ const TextureSelector: React.FC<TextureSelectorProps> = ({ onTextureSelect, text
   const [currentPage, setCurrentPage] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
   
-  const itemsPerPage = 18; // 6列 × 3行 = 18个项目，确保每页都是完整的
+  const itemsPerPage = 40; // 8列 × 5行 = 40个项目，增加每页显示数量
   const totalPages = Math.ceil(filteredTextures.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const currentTextures = filteredTextures.slice(startIndex, startIndex + itemsPerPage);
@@ -116,25 +154,27 @@ const TextureSelector: React.FC<TextureSelectorProps> = ({ onTextureSelect, text
       </div>
 
       {/* 纹理网格 */}
-      <div className="grid grid-cols-6 gap-3 max-h-96 overflow-y-auto custom-scrollbar">
+      <div className="grid grid-cols-8 gap-2 max-h-[500px] overflow-y-auto custom-scrollbar">
         {currentTextures.map((texture) => (
           <button
             key={texture.id}
             onClick={() => handleTextureClick(texture.id)}
-            className="p-3 bg-gray-700/30 border border-gray-600/50 rounded-lg hover:border-orange-500/50 hover:bg-orange-500/10 transition-all duration-200 group transform hover:scale-105"
+            className="p-2 bg-gray-700/30 border border-gray-600/50 rounded-lg hover:border-orange-500/50 hover:bg-orange-500/10 transition-all duration-200 group transform hover:scale-105 flex flex-col items-center min-h-[100px]"
             title={texture.name}
           >
-            <div className="w-12 h-12 mx-auto mb-2 bg-gray-600/30 rounded-lg flex items-center justify-center">
+            <div className="w-10 h-10 mx-auto mb-1 bg-gray-600/30 rounded-lg flex items-center justify-center flex-shrink-0">
               <Image
                 src={texture.imagePath}
                 alt={texture.name}
-                width={48}
-                height={48}
+                width={40}
+                height={40}
                 className="object-contain rounded"
               />
             </div>
-            <div className="text-xs text-gray-300 truncate group-hover:text-orange-300 transition-colors">
-              {texture.name}
+            <div className="text-xs text-gray-300 group-hover:text-orange-300 transition-colors text-center leading-tight px-1 overflow-hidden">
+              <div className="line-clamp-2 break-words">
+                {texture.name}
+              </div>
             </div>
           </button>
         ))}

@@ -45,6 +45,8 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({ onTemplateApply }) 
   const [activeTab, setActiveTab] = useState<'system' | 'user'>('system');
   const [isLoading, setIsLoading] = useState(true);
   const [categories, setCategories] = useState<string[]>(['全部']);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
   // 加载模板数据
   useEffect(() => {
@@ -77,8 +79,13 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({ onTemplateApply }) 
   // 过滤模板
   const currentTemplates = activeTab === 'system' ? templates : localTemplates;
   const filteredTemplates = currentTemplates.filter(template => {
-    if (selectedCategory === '全部') return true;
-    return template.category === selectedCategory;
+    // 分类过滤
+    const categoryMatch = selectedCategory === '全部' || template.category === selectedCategory;
+    // 搜索过滤
+    const searchMatch = searchTerm === '' || 
+      template.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      template.description.toLowerCase().includes(searchTerm.toLowerCase());
+    return categoryMatch && searchMatch;
   });
 
   // 删除本地模板
@@ -221,66 +228,162 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({ onTemplateApply }) 
         </button>
       </div>
       
-      {/* 分类筛选 */}
-      {activeTab === 'system' && (
-        <div className="mb-4">
-          <select
-            value={selectedCategory}
-            onChange={(e) => setSelectedCategory(e.target.value)}
-            className="px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all duration-200 text-sm"
-          >
-            {categories.map(category => (
-              <option key={category} value={category} className="bg-gray-700 text-white">{category}</option>
-            ))}
-          </select>
+      {/* 搜索和筛选区域 */}
+      <div className="mb-4 space-y-3">
+        {/* 搜索框 */}
+        <div className="relative">
+          <input
+            type="text"
+            placeholder="搜索模板名称或描述..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full px-4 py-3 pl-10 bg-gray-700/50 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all duration-200 text-sm"
+          />
+          <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+          </div>
+          {searchTerm && (
+            <button
+              onClick={() => setSearchTerm('')}
+              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white transition-colors"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          )}
         </div>
-      )}
+        
+        {/* 分类筛选和视图切换 */}
+        <div className="flex items-center justify-between gap-3">
+          {activeTab === 'system' && (
+            <select
+              value={selectedCategory}
+              onChange={(e) => setSelectedCategory(e.target.value)}
+              className="px-4 py-2 bg-gray-700/50 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all duration-200 text-sm flex-1"
+            >
+              {categories.map(category => (
+                <option key={category} value={category} className="bg-gray-700 text-white">{category}</option>
+              ))}
+            </select>
+          )}
+          
+          {/* 视图模式切换 */}
+          <div className="flex gap-1 bg-gray-700/30 rounded-lg p-1">
+            <button
+              onClick={() => setViewMode('list')}
+              className={`px-3 py-1 rounded text-xs transition-all duration-200 ${
+                viewMode === 'list'
+                  ? 'bg-orange-600 text-white'
+                  : 'text-gray-400 hover:text-white'
+              }`}
+              title="列表视图"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+              </svg>
+            </button>
+            <button
+              onClick={() => setViewMode('grid')}
+              className={`px-3 py-1 rounded text-xs transition-all duration-200 ${
+                viewMode === 'grid'
+                  ? 'bg-orange-600 text-white'
+                  : 'text-gray-400 hover:text-white'
+              }`}
+              title="网格视图"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
 
       {/* 模板列表 */}
-      <div className="space-y-3 max-h-96 overflow-y-auto custom-scrollbar">
+      <div className={`max-h-[70vh] overflow-y-auto custom-scrollbar ${
+        viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4' : 'space-y-3'
+      }`}>
         {filteredTemplates.length === 0 ? (
-          <div className="text-center text-gray-500 py-8">
-            <div className="text-4xl mb-2">{activeTab === 'system' ? '📝' : '💾'}</div>
-            <div>
-              {activeTab === 'system' ? '暂无系统模板' : '暂无本地模板'}
+          <div className="text-center text-gray-500 py-8 col-span-full">
+            <div className="text-4xl mb-2">
+              {searchTerm ? '🔍' : (activeTab === 'system' ? '📝' : '💾')}
             </div>
-            {activeTab === 'user' && (
+            <div>
+              {searchTerm 
+                ? `未找到包含 "${searchTerm}" 的模板`
+                : (activeTab === 'system' ? '暂无系统模板' : '暂无本地模板')
+              }
+            </div>
+            {!searchTerm && activeTab === 'user' && (
               <div className="text-sm mt-1">
                 在编辑器中点击"保存到本地"来创建模板
               </div>
             )}
-            {activeTab === 'system' && (
+            {!searchTerm && activeTab === 'system' && (
               <div className="text-sm mt-1">请联系管理员添加模板</div>
+            )}
+            {searchTerm && (
+              <button
+                onClick={() => setSearchTerm('')}
+                className="mt-3 px-4 py-2 text-sm bg-gray-600/50 text-white rounded-lg hover:bg-gray-600 transition-all duration-200"
+              >
+                清除搜索
+              </button>
             )}
           </div>
         ) : (
           filteredTemplates.map((template) => (
             <div
               key={template.id}
-              className="p-4 bg-gray-700/30 border border-gray-600/50 rounded-lg hover:border-orange-500/50 hover:bg-orange-500/10 transition-all duration-200 group"
+              className={`bg-gray-700/30 border border-gray-600/50 rounded-lg hover:border-orange-500/50 hover:bg-orange-500/10 transition-all duration-200 group ${
+                viewMode === 'grid' ? 'p-4 flex flex-col h-full min-h-[180px]' : 'p-4'
+              }`}
             >
-              <div className="flex items-center justify-between mb-2">
-                <div className="flex items-center gap-2">
-                  <h4 className="text-lg font-semibold text-white group-hover:text-orange-300 transition-colors">
+              <div className={`flex items-start justify-between ${
+                viewMode === 'grid' ? 'mb-3' : 'mb-2'
+              }`}>
+                <div className="flex items-center gap-2 flex-1 min-w-0">
+                  <h4 className={`font-semibold text-white group-hover:text-orange-300 transition-colors ${
+                    viewMode === 'grid' ? 'text-sm leading-tight' : 'text-lg truncate'
+                  }`}>
                     {template.name}
                   </h4>
                   {activeTab === 'user' && (
-                    <span className="text-xs text-green-400 bg-green-600/20 px-2 py-1 rounded border border-green-500/30">
+                    <span className="text-xs text-green-400 bg-green-600/20 px-2 py-1 rounded border border-green-500/30 flex-shrink-0">
                       本地
                     </span>
                   )}
                 </div>
-                <span className="text-xs text-gray-400 bg-gray-600/50 px-2 py-1 rounded">
-                  {template.category || '其他'}
-                </span>
+                {viewMode === 'list' && (
+                  <span className="text-xs text-gray-400 bg-gray-600/50 px-2 py-1 rounded flex-shrink-0">
+                    {template.category || '其他'}
+                  </span>
+                )}
               </div>
               
-              <p className="text-sm text-gray-300 mb-3 leading-relaxed">
+              {viewMode === 'grid' && (
+                <div className="mb-2">
+                  <span className="text-xs text-gray-400 bg-gray-600/50 px-2 py-1 rounded">
+                    {template.category || '其他'}
+                  </span>
+                </div>
+              )}
+              
+              <p className={`text-gray-300 leading-relaxed ${
+                viewMode === 'grid' ? 'text-xs mb-3 flex-1 line-clamp-3' : 'text-sm mb-3 line-clamp-2'
+              }`}>
                 {template.description}
               </p>
               
-              <div className="flex items-center justify-between">
-                <div className="text-xs text-gray-400">
+              <div className={`flex items-center justify-between mt-auto ${
+                viewMode === 'grid' ? 'flex-col gap-3' : ''
+              }`}>
+                <div className={`text-xs text-gray-400 ${
+                  viewMode === 'grid' ? 'self-start' : ''
+                }`}>
                   {template.elements.length} 个元素
                   {activeTab === 'user' && (
                     <div className="text-xs text-yellow-400 mt-1">
@@ -288,10 +391,14 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({ onTemplateApply }) 
                     </div>
                   )}
                 </div>
-                <div className="flex gap-2">
+                <div className={`flex ${
+                  viewMode === 'grid' ? 'w-full gap-2' : 'gap-2'
+                }`}>
                    <button
                      onClick={() => handleCopyTemplate(template)}
-                     className="px-3 py-1 text-xs bg-gray-600/80 text-white rounded hover:bg-gray-600 transition-all duration-200"
+                     className={`text-xs bg-gray-600/80 text-white rounded hover:bg-gray-600 transition-all duration-200 ${
+                       viewMode === 'grid' ? 'px-3 py-2 flex-1' : 'px-3 py-1'
+                     }`}
                      title="复制模板内容到剪贴板"
                    >
                      复制
@@ -299,16 +406,20 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({ onTemplateApply }) 
                    {activeTab === 'user' && (
                      <button
                        onClick={() => handleDeleteLocalTemplate(template.id)}
-                       className="px-3 py-1 text-xs bg-red-600/80 text-white rounded hover:bg-red-600 transition-all duration-200"
+                       className={`text-xs bg-red-600/80 text-white rounded hover:bg-red-600 transition-all duration-200 ${
+                         viewMode === 'grid' ? 'px-3 py-2 flex-1' : 'px-3 py-1'
+                       }`}
                      >
                        删除
                      </button>
                    )}
                    <button
                      onClick={() => handleApplyTemplate(template)}
-                     className="px-4 py-2 text-sm bg-gradient-to-r from-orange-600 to-orange-700 text-white rounded-lg hover:from-orange-500 hover:to-orange-600 transition-all duration-200 font-semibold shadow-lg hover:shadow-xl transform hover:scale-[1.02] border border-orange-600/50"
+                     className={`bg-gradient-to-r from-orange-600 to-orange-700 text-white rounded-lg hover:from-orange-500 hover:to-orange-600 transition-all duration-200 font-semibold shadow-lg hover:shadow-xl transform hover:scale-[1.02] border border-orange-600/50 ${
+                       viewMode === 'grid' ? 'px-3 py-2 text-xs flex-1' : 'px-4 py-2 text-sm'
+                     }`}
                    >
-                     应用模板
+                     应用
                    </button>
                  </div>
               </div>
@@ -316,6 +427,18 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({ onTemplateApply }) 
           ))
         )}
       </div>
+      
+      {/* 结果统计 */}
+      {filteredTemplates.length > 0 && (
+        <div className="mt-4 text-center text-xs text-gray-400">
+          显示 {filteredTemplates.length} 个模板
+          {searchTerm && (
+            <span className="ml-2">
+              搜索: "{searchTerm}"
+            </span>
+          )}
+        </div>
+      )}
       
       {/* Toast 组件 */}
       <Toast
@@ -329,3 +452,49 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({ onTemplateApply }) 
 };
 
 export default TemplateSelector;
+
+// 添加自定义样式
+const customStyles = `
+  .line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  
+  .line-clamp-3 {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  
+  .custom-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(156, 163, 175, 0.5) transparent;
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background-color: rgba(156, 163, 175, 0.5);
+    border-radius: 3px;
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(156, 163, 175, 0.7);
+  }
+`;
+
+// 注入样式
+if (typeof document !== 'undefined') {
+  const styleElement = document.createElement('style');
+  styleElement.textContent = customStyles;
+  document.head.appendChild(styleElement);
+}
