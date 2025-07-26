@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import Script from "next/script";
 import "./globals.css";
+
+import BaiduAnalytics from "../components/BaiduAnalytics";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -25,7 +28,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
-        <script
+        <Script
+          id="baidu-analytics"
+          strategy="afterInteractive"
           dangerouslySetInnerHTML={{
             __html: `
               var _hmt = _hmt || [];
@@ -42,6 +47,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
+        <BaiduAnalytics />
         {children}
       </body>
     </html>
