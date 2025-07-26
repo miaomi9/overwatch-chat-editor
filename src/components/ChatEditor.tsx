@@ -10,7 +10,7 @@ import CodeGenerator from './CodeGenerator';
 import UpdateLogModal from './UpdateLogModal';
 import { parseOverwatchCode, containsOverwatchCode } from '@/utils/overwatchCodeParser';
 import { useToast } from '@/hooks/useToast';
-import { loadTexturesWithCache, quickLoadTextures, type Texture as CachedTexture } from '@/utils/textureCache';
+import { loadTexturesWithCache, type Texture as CachedTexture } from '@/utils/textureCache';
 
 // 使用缓存工具中的Texture类型
 type Texture = CachedTexture;
@@ -54,32 +54,15 @@ const ChatEditor: React.FC = () => {
   }, []);
 
 
-  // 加载纹理数据（快速加载版本）
+  // 加载纹理数据
   useEffect(() => {
     const loadTextures = async () => {
       try {
         setIsLoadingTextures(true);
-        console.log('开始快速加载纹理数据...');
-        
-        // 使用快速加载函数，优先显示基本信息
-        const loadedTextures = await quickLoadTextures();
-        
-        console.log(`纹理数据快速加载完成，共 ${loadedTextures.length} 个纹理`);
-        setTextures(loadedTextures);
+        const texturesData = await loadTexturesWithCache();
+        setTextures(texturesData);
       } catch (error) {
-        console.error('快速加载纹理数据失败，尝试常规加载:', error);
-        try {
-          // 回退到常规加载
-          const fallbackTextures = await loadTexturesWithCache({
-            useCache: true,
-            loadAll: false,
-            pageSize: 50
-          });
-          setTextures(fallbackTextures);
-        } catch (fallbackError) {
-          console.error('常规加载也失败:', fallbackError);
-          setTextures([]);
-        }
+        console.error('Failed to load textures:', error);
       } finally {
         setIsLoadingTextures(false);
       }

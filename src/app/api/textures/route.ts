@@ -1,114 +1,34 @@
 import { NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
-import { NextRequest } from 'next/server';
 
-// 缓存纹理列表以避免重复文件系统操作
-let cachedTextures: any[] | null = null;
-let cacheTimestamp = 0;
-const CACHE_DURATION = 5 * 60 * 1000; // 5分钟缓存
-
-function getTexturesList() {
-  const now = Date.now();
-  
-  // 如果缓存存在且未过期，直接返回
-  if (cachedTextures && (now - cacheTimestamp) < CACHE_DURATION) {
-    return cachedTextures;
-  }
-  
-  const texturesDir = path.join(process.cwd(), 'public', 'textures');
-  
-  // 检查目录是否存在
-  if (!fs.existsSync(texturesDir)) {
-    throw new Error('Textures directory not found');
-  }
-
-  // 读取目录中的所有文件
-  const files = fs.readdirSync(texturesDir);
-  
-  // 过滤出PNG文件并生成纹理数据
-  const textures = files
-    .filter(file => file.endsWith('.png'))
-    .map(fileName => {
-      const nameWithoutExt = fileName.replace('.png', '');
-      return {
-        id: nameWithoutExt,
-        txCode: `<TXC00${nameWithoutExt}>`,
-        imagePath: `/textures/${fileName}`,
-        fileName
-      };
-    })
-    .sort((a, b) => a.fileName.localeCompare(b.fileName)); // 按文件名排序
-  
-  // 更新缓存
-  cachedTextures = textures;
-  cacheTimestamp = now;
-  
-  return textures;
-}
-
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
-    const { searchParams } = new URL(request.url);
-    const page = parseInt(searchParams.get('page') || '1');
-    const limit = parseInt(searchParams.get('limit') || '50');
-    const search = searchParams.get('search') || '';
-    const category = searchParams.get('category') || '';
-    const ids = searchParams.get('ids')?.split(',').filter(Boolean) || [];
+    const texturesDir = path.join(process.cwd(), 'public', 'textures');
     
-    // 获取所有纹理数据
-    let textures = getTexturesList();
-    
-    // 如果指定了特定ID，只返回这些纹理
-    if (ids.length > 0) {
-      textures = textures.filter(texture => ids.includes(texture.id));
-      return NextResponse.json({ 
-        textures,
-        total: textures.length,
-        page: 1,
-        limit: textures.length,
-        totalPages: 1
-      });
+    // 检查目录是否存在
+    if (!fs.existsSync(texturesDir)) {
+      return NextResponse.json({ error: 'Textures directory not found' }, { status: 404 });
     }
+
+    // 读取目录中的所有文件
+    const files = fs.readdirSync(texturesDir);
     
-    // 搜索过滤
-    if (search) {
-      const searchLower = search.toLowerCase();
-      textures = textures.filter(texture => 
-        texture.id.toLowerCase().includes(searchLower) ||
-        texture.fileName.toLowerCase().includes(searchLower)
-      );
-    }
-    
-    // 分类过滤（这里暂时基于文件名前缀，后续可以结合texture-data进行更精确的分类）
-    if (category) {
-      // 简单的分类逻辑，可以根据需要扩展
-      textures = textures.filter(texture => {
-        const prefix = texture.id.substring(0, 8);
-        return prefix.includes(category);
-      });
-    }
-    
-    const total = textures.length;
-    const totalPages = Math.ceil(total / limit);
-    const startIndex = (page - 1) * limit;
-    const endIndex = startIndex + limit;
-    
-    const paginatedTextures = textures.slice(startIndex, endIndex);
-    
-    const response = NextResponse.json({
-      textures: paginatedTextures,
-      total,
-      page,
-      limit,
-      totalPages,
-      hasMore: page < totalPages
-    });
-    
-    // 添加缓存头
-    response.headers.set('Cache-Control', 'public, max-age=300'); // 5分钟缓存
-    
-    return response;
+    // 过滤出PNG文件并生成纹理数据
+    const textures = files
+      .filter(file => file.endsWith('.png'))
+      .map(fileName => {
+        const nameWithoutExt = fileName.replace('.png', '');
+        return {
+          id: nameWithoutExt,
+          txCode: `<TXC00${nameWithoutExt}>`,
+          imagePath: `/textures/${fileName}`,
+          fileName
+        };
+      })
+      .sort((a, b) => a.fileName.localeCompare(b.fileName)); // 按文件名排序
+
+    return NextResponse.json({ textures });
   } catch (error) {
     console.error('Error reading textures directory:', error);
     return NextResponse.json({ error: 'Failed to read textures' }, { status: 500 });
