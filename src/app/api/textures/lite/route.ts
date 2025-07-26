@@ -3,17 +3,17 @@ import fs from 'fs';
 import path from 'path';
 import { NextRequest } from 'next/server';
 
-// 缓存纹理列表以避免重复文件系统操作
-let cachedTextures: any[] | null = null;
+// 轻量级纹理数据缓存
+let cachedLiteTextures: any[] | null = null;
 let cacheTimestamp = 0;
 const CACHE_DURATION = 5 * 60 * 1000; // 5分钟缓存
 
-function getTexturesList() {
+function getLiteTexturesList() {
   const now = Date.now();
   
   // 如果缓存存在且未过期，直接返回
-  if (cachedTextures && (now - cacheTimestamp) < CACHE_DURATION) {
-    return cachedTextures;
+  if (cachedLiteTextures && (now - cacheTimestamp) < CACHE_DURATION) {
+    return cachedLiteTextures;
   }
   
   const texturesDir = path.join(process.cwd(), 'public', 'textures');
@@ -26,7 +26,7 @@ function getTexturesList() {
   // 读取目录中的所有文件
   const files = fs.readdirSync(texturesDir);
   
-  // 过滤出PNG文件并生成纹理数据
+  // 过滤出PNG文件并生成轻量级纹理数据（只包含必要字段）
   const textures = files
     .filter(file => file.endsWith('.png'))
     .map(fileName => {
@@ -34,14 +34,13 @@ function getTexturesList() {
       return {
         id: nameWithoutExt,
         txCode: `<TXC00${nameWithoutExt}>`,
-        imagePath: `/textures/${fileName}`,
-        fileName
+        // 不包含imagePath，减少数据量
       };
     })
-    .sort((a, b) => a.fileName.localeCompare(b.fileName)); // 按文件名排序
+    .sort((a, b) => a.id.localeCompare(b.id)); // 按ID排序
   
   // 更新缓存
-  cachedTextures = textures;
+  cachedLiteTextures = textures;
   cacheTimestamp = now;
   
   return textures;
@@ -51,13 +50,12 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get('page') || '1');
-    const limit = parseInt(searchParams.get('limit') || '50');
+    const limit = parseInt(searchParams.get('limit') || '100');
     const search = searchParams.get('search') || '';
-    const category = searchParams.get('category') || '';
     const ids = searchParams.get('ids')?.split(',').filter(Boolean) || [];
     
-    // 获取所有纹理数据
-    let textures = getTexturesList();
+    // 获取所有轻量级纹理数据
+    let textures = getLiteTexturesList();
     
     // 如果指定了特定ID，只返回这些纹理
     if (ids.length > 0) {
@@ -75,18 +73,8 @@ export async function GET(request: NextRequest) {
     if (search) {
       const searchLower = search.toLowerCase();
       textures = textures.filter(texture => 
-        texture.id.toLowerCase().includes(searchLower) ||
-        texture.fileName.toLowerCase().includes(searchLower)
+        texture.id.toLowerCase().includes(searchLower)
       );
-    }
-    
-    // 分类过滤（这里暂时基于文件名前缀，后续可以结合texture-data进行更精确的分类）
-    if (category) {
-      // 简单的分类逻辑，可以根据需要扩展
-      textures = textures.filter(texture => {
-        const prefix = texture.id.substring(0, 8);
-        return prefix.includes(category);
-      });
     }
     
     const total = textures.length;
@@ -105,8 +93,9 @@ export async function GET(request: NextRequest) {
       hasMore: page < totalPages
     });
     
-    // 添加缓存头
+    // 添加缓存头和压缩
     response.headers.set('Cache-Control', 'public, max-age=300'); // 5分钟缓存
+    response.headers.set('Content-Encoding', 'gzip');
     
     return response;
   } catch (error) {
