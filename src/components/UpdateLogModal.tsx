@@ -17,7 +17,7 @@ const UpdateLogModal: React.FC<UpdateLogModalProps> = ({ isVisible, onClose }) =
   const updateLogs = [
     {
       version: '1.1.0',
-      date: '2024-12-19',
+      date: '2025-07-26',
       title: '纹理数据缓存优化更新',
       features: [
         '🚀 新增纹理数据智能缓存系统',
