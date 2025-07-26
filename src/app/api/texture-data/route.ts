@@ -49,6 +49,10 @@ export async function POST(request: NextRequest) {
 
     // 写回文件
     fs.writeFileSync(DATA_FILE_PATH, JSON.stringify(data, null, 2), 'utf-8');
+    
+    // 更新文件修改时间以触发版本变更
+    const now = new Date();
+    fs.utimesSync(DATA_FILE_PATH, now, now);
 
     return NextResponse.json({ success: true });
   } catch (error) {
@@ -72,6 +76,10 @@ export async function PUT(request: NextRequest) {
 
     // 写回文件
     fs.writeFileSync(DATA_FILE_PATH, JSON.stringify(data, null, 2), 'utf-8');
+    
+    // 更新文件修改时间以触发版本变更
+    const now = new Date();
+    fs.utimesSync(DATA_FILE_PATH, now, now);
 
     return NextResponse.json({ success: true });
   } catch (error) {

@@ -7,6 +7,7 @@ import Toast from '@/components/Toast';
 import { useToast } from '@/hooks/useToast';
 import { getTextureName, clearTextureDataCache } from '@/data/textureNames';
 import { getTextureCategory, getAllCategoriesAsync, clearCategoryDataCache } from '@/data/textureCategories';
+import { loadTexturesWithCache, clearTextureCache, getCacheInfo } from '@/utils/textureCache';
 
 interface TextureInfo {
   name: string;
@@ -186,7 +187,25 @@ const AdminPage: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState('全部');
   const [currentPage, setCurrentPage] = useState(1);
   const [isDev, setIsDev] = useState(false);
+  const [cacheInfo, setCacheInfo] = useState<any>(null);
   const { toast, showSuccess, showError } = useToast();
+
+  // 更新缓存信息
+  const updateCacheInfo = () => {
+    const info = getCacheInfo();
+    setCacheInfo(info);
+  };
+
+  // 手动清除缓存
+  const handleClearCache = async () => {
+    clearTextureCache();
+    clearTextureDataCache();
+    clearCategoryDataCache();
+    updateCacheInfo();
+    showSuccess('缓存已清除');
+    // 重新加载数据
+    await loadData(true);
+  };
   
 
 
@@ -198,45 +217,33 @@ const AdminPage: React.FC = () => {
     
     if (process.env.NODE_ENV === 'development') {
       loadData();
+      updateCacheInfo();
     }
   }, []);
 
-  const loadData = async () => {
+  const loadData = async (forceRefresh = false) => {
     try {
       setLoading(true);
       
-      // 加载纹理文件列表
-      const texturesResponse = await fetch('/api/textures');
-      const texturesData = await texturesResponse.json();
+      if (forceRefresh) {
+        // 强制刷新时清除所有缓存
+        clearTextureCache();
+        clearTextureDataCache();
+        clearCategoryDataCache();
+      }
       
-      // 加载纹理数据
-      const dataResponse = await fetch('/api/texture-data');
-      const data = await dataResponse.json();
-      
-      setTextureData(data);
-      
-      // 合并数据
-      const mergedTextures = texturesData.textures.map((texture: any) => {
-        const info = data.textures[texture.fileName.replace('.png', '')] || {
-          name: texture.fileName.replace('.png', ''),
-          category: '未分类'
-        };
-        
-        return {
-          id: texture.fileName.replace('.png', ''),
-          fileName: texture.fileName,
-          imagePath: texture.imagePath,
-          txCode: texture.txCode,
-          name: info.name,
-          category: info.category
-        };
-      });
-      
+      // 使用缓存工具加载纹理数据
+      const mergedTextures = await loadTexturesWithCache();
       setTextures(mergedTextures);
       
-      // 清除缓存以确保数据同步
-      clearTextureDataCache();
-      clearCategoryDataCache();
+      // 单独加载纹理数据用于管理
+      const dataResponse = await fetch('/api/texture-data');
+      const data = await dataResponse.json();
+      setTextureData(data);
+      
+      // 更新缓存信息
+      updateCacheInfo();
+      
     } catch (error) {
       console.error('Error loading data:', error);
     } finally {
@@ -255,12 +262,13 @@ const AdminPage: React.FC = () => {
       });
       
       if (response.ok) {
-        // 清除缓存以确保数据同步
+        // 清除所有缓存以确保数据同步
+        clearTextureCache();
         clearTextureDataCache();
         clearCategoryDataCache();
         
-        // 重新加载数据
-        await loadData();
+        // 强制重新加载数据
+        await loadData(true);
         showSuccess('保存成功！');
       } else {
         showError('保存失败！');
@@ -373,10 +381,39 @@ const AdminPage: React.FC = () => {
               }}
               className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
+            
+            <button
+              onClick={handleClearCache}
+              className="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors"
+            >
+              清除缓存
+            </button>
           </div>
           
-          <div className="text-sm text-gray-600">
-            共 {filteredTextures.length} 个纹理，第 {currentPage} / {totalPages} 页
+          <div className="flex justify-between items-center">
+            <div className="text-sm text-gray-600">
+              共 {filteredTextures.length} 个纹理，第 {currentPage} / {totalPages} 页
+            </div>
+            
+            {/* 缓存状态显示 */}
+            {cacheInfo && (
+              <div className="text-sm text-gray-500">
+                缓存状态: 
+                <span className={`ml-1 px-2 py-1 rounded text-xs ${
+                  cacheInfo.hasMemoryCache || cacheInfo.hasLocalStorageCache 
+                    ? 'bg-green-100 text-green-700' 
+                    : 'bg-gray-100 text-gray-600'
+                }`}>
+                  {cacheInfo.hasMemoryCache ? '内存缓存' : 
+                   cacheInfo.hasLocalStorageCache ? '本地缓存' : '无缓存'}
+                </span>
+                {cacheInfo.lastUpdated && (
+                  <span className="ml-2 text-xs text-gray-400">
+                    更新于: {new Date(cacheInfo.lastUpdated).toLocaleTimeString()}
+                  </span>
+                )}
+              </div>
+            )}
           </div>
         </div>
 

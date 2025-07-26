@@ -7,17 +7,13 @@ import TemplateSelector from './TemplateSelector';
 import Toast from './Toast';
 import Preview from './Preview';
 import CodeGenerator from './CodeGenerator';
+import UpdateLogModal from './UpdateLogModal';
 import { parseOverwatchCode, containsOverwatchCode } from '@/utils/overwatchCodeParser';
 import { useToast } from '@/hooks/useToast';
+import { loadTexturesWithCache, type Texture as CachedTexture } from '@/utils/textureCache';
 
-interface Texture {
-  id: string;
-  fileName: string;
-  imagePath: string;
-  txCode: string;
-  name: string;
-  category: string;
-}
+// 使用缓存工具中的Texture类型
+type Texture = CachedTexture;
 
 interface Element {
   id: string;
@@ -30,8 +26,7 @@ interface Element {
   texture?: Texture;
 }
 
-// 纹理数据缓存
-let texturesCache: Texture[] | null = null;
+// 使用统一的缓存管理工具
 
 const ChatEditor: React.FC = () => {
   const [elements, setElements] = useState<Element[]>([]);
@@ -40,7 +35,23 @@ const ChatEditor: React.FC = () => {
   const [isLoadingTextures, setIsLoadingTextures] = useState(true);
   const [showSaveDialog, setShowSaveDialog] = useState(false);
   const [templateName, setTemplateName] = useState('');
+  const [showUpdateLog, setShowUpdateLog] = useState(false);
   const { toast, showSuccess, showError, showWarning, hideToast } = useToast();
+
+  // 当前版本号
+  const CURRENT_VERSION = '1.1.0';
+
+  // 检查是否需要显示更新日志
+  useEffect(() => {
+    const lastViewedVersion = localStorage.getItem('lastViewedUpdateVersion');
+    if (lastViewedVersion !== CURRENT_VERSION) {
+      // 延迟显示，等待页面加载完成
+      const timer = setTimeout(() => {
+        setShowUpdateLog(true);
+      }, 1000);
+      return () => clearTimeout(timer);
+    }
+  }, []);
 
 
   // 加载纹理数据
@@ -48,42 +59,8 @@ const ChatEditor: React.FC = () => {
     const loadTextures = async () => {
       try {
         setIsLoadingTextures(true);
-        
-        // 检查缓存
-        if (texturesCache) {
-          setTextures(texturesCache);
-          setIsLoadingTextures(false);
-          return;
-        }
-        
-        // 加载纹理文件列表
-        const texturesResponse = await fetch('/api/textures');
-        const texturesData = await texturesResponse.json();
-        
-        // 加载纹理数据
-        const dataResponse = await fetch('/api/texture-data');
-        const data = await dataResponse.json();
-        
-        // 合并数据
-        const mergedTextures = texturesData.textures.map((texture: any) => {
-          const info = data.textures[texture.fileName.replace('.png', '')] || {
-            name: texture.fileName.replace('.png', ''),
-            category: '未分类'
-          };
-          
-          return {
-            id: texture.fileName.replace('.png', ''),
-            fileName: texture.fileName,
-            imagePath: texture.imagePath,
-            txCode: texture.txCode,
-            name: info.name,
-            category: info.category
-          };
-        });
-        
-        // 缓存数据
-        texturesCache = mergedTextures;
-        setTextures(mergedTextures);
+        const texturesData = await loadTexturesWithCache();
+        setTextures(texturesData);
       } catch (error) {
         console.error('Failed to load textures:', error);
       } finally {
@@ -248,6 +225,12 @@ const ChatEditor: React.FC = () => {
         onClose={hideToast}
       />
       
+      {/* 更新日志弹窗 */}
+      <UpdateLogModal
+        isVisible={showUpdateLog}
+        onClose={() => setShowUpdateLog(false)}
+      />
+      
       {/* Loading 遮罩 */}
       {isLoadingTextures && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center">
@@ -305,7 +288,21 @@ const ChatEditor: React.FC = () => {
       
       <div className="max-w-7xl mx-auto">
         <div className="flex justify-between items-center mb-6">
-          <h1 className="text-4xl font-bold text-center text-white bg-gradient-to-r from-orange-400 to-orange-600 bg-clip-text text-transparent">守望先锋聊天编辑器</h1>
+          <div className="flex flex-col">
+            <h1 className="text-4xl font-bold text-center text-white bg-gradient-to-r from-orange-400 to-orange-600 bg-clip-text text-transparent">守望先锋聊天编辑器</h1>
+            <div className="mt-2 flex items-center justify-center gap-2">
+              <span className="text-gray-400 text-sm">不会使用？</span>
+              <a 
+                href="https://www.bilibili.com/video/BV1ncbRzGEJW/?share_source=copy_web&vd_source=46be8e2fa7c30d3bdf853b9c4adcd69b"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-orange-400 hover:text-orange-300 text-sm underline transition-colors flex items-center gap-1"
+              >
+                <span>📺</span>
+                查看视频食用教程！
+              </a>
+            </div>
+          </div>
           <button
             onClick={handleSaveToLocal}
             className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 text-sm"
