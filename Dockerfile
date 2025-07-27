@@ -29,7 +29,7 @@ RUN npm run build
 EXPOSE 3000
 
 # 创建启动脚本
-RUN echo '#!/bin/sh\n\n# 等待数据库连接\necho "等待数据库连接..."\nuntil npx prisma db push --accept-data-loss 2>/dev/null; do\n  echo "数据库连接失败，5秒后重试..."\n  sleep 5\ndone\n\necho "数据库连接成功，启动应用..."\nnpm start' > /app/start.sh && chmod +x /app/start.sh
+RUN printf '#!/bin/sh\n\n# 等待数据库连接\necho "等待数据库连接..."\nuntil npx prisma db push --accept-data-loss 2>/dev/null; do\n  echo "数据库连接失败，5秒后重试..."\n  sleep 5\ndone\n\necho "数据库连接成功，启动应用..."\nexec npm start\n' > /app/start.sh && chmod +x /app/start.sh
 
 # 启动应用
 CMD ["/bin/sh", "/app/start.sh"]
