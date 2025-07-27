@@ -15,15 +15,16 @@ export async function GET(request: NextRequest) {
 
     const skip = (page - 1) * limit;
 
-    // 构建查询条件
+    // 构建查询条件 - 只显示已审核的模板
     const where = search
       ? {
+          isApproved: true,
           OR: [
             { name: { contains: search } },
             { description: { contains: search } },
           ],
         }
-      : {};
+      : { isApproved: true };
 
     // 获取模板列表
     const templates = await prisma.userTemplate.findMany({
@@ -146,6 +147,8 @@ export async function POST(request: NextRequest) {
       overwatchCode: template.overwatchCode,
       likesCount: template.likesCount,
       createdAt: template.createdAt,
+      message: '模板提交成功！您的模板正在等待审核，审核通过后将在模板库中显示。',
+      needsApproval: true
     }, { status: 201 });
   } catch (error) {
     console.error('创建用户模板失败:', error);

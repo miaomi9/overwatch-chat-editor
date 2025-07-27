@@ -17,6 +17,7 @@ model UserTemplate {
   overwatchCode String   @db.Text // 守望先锋代码
   creatorIp     String   // 创建者IP地址
   likesCount    Int      @default(0) // 点赞数量
+  isApproved    Boolean  @default(false) // 审核状态，默认未审核
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
   

@@ -4,13 +4,14 @@ import React, { useState, useEffect } from 'react';
 import TextureSelector from './TextureSelector';
 import TextInput from './TextInput';
 import TemplateSelector from './TemplateSelector';
-import Toast from './Toast';
+
 import Preview from './Preview';
 import CodeGenerator from './CodeGenerator';
 import UpdateLogModal from './UpdateLogModal';
 import { parseOverwatchCode, containsOverwatchCode } from '@/utils/overwatchCodeParser';
-import { useToast } from '@/hooks/useToast';
+
 import { loadTexturesWithCache, type Texture as CachedTexture } from '@/utils/textureCache';
+import { useGlobalToast } from '@/contexts/ToastContext';
 
 // 使用缓存工具中的Texture类型
 type Texture = CachedTexture;
@@ -38,7 +39,7 @@ const ChatEditor: React.FC = () => {
   
   const MAX_TEMPLATE_NAME_CHARACTERS = 100;
   const [showUpdateLog, setShowUpdateLog] = useState(false);
-  const { toast, showSuccess, showError, showWarning, hideToast } = useToast();
+  const { showSuccess, showWarning } = useGlobalToast();
 
   // 当前版本号
   const CURRENT_VERSION = '1.2.0';
@@ -219,13 +220,7 @@ const ChatEditor: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-orange-900 p-4 relative">
-      {/* Toast 组件 */}
-      <Toast
-        message={toast.message}
-        type={toast.type}
-        isVisible={toast.isVisible}
-        onClose={hideToast}
-      />
+
       
       {/* 更新日志弹窗 */}
       <UpdateLogModal
@@ -457,6 +452,8 @@ const ChatEditor: React.FC = () => {
           </div>
         </div>
       </div>
+      
+
     </div>
   );
 };

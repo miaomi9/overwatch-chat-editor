@@ -55,7 +55,7 @@ const Toast: React.FC<ToastProps> = ({
   };
 
   return (
-    <div className="fixed top-4 right-4 z-50 animate-fade-in">
+    <div className="fixed top-4 right-4 z-[100001] animate-fade-in">
       <div className={`
         ${getToastStyles()}
         backdrop-blur-sm border rounded-xl px-4 py-3 shadow-lg

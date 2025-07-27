@@ -1,7 +1,7 @@
 'use client';
 import React, { useState, useCallback, useRef, useMemo, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { useToast } from '@/hooks/useToast';
+import { useGlobalToast } from '@/contexts/ToastContext';
 import { createSubmitDebounce } from '@/utils/debounceThrottle';
 import Preview from './Preview';
 import { parseOverwatchCode } from '@/utils/overwatchCodeParser';
@@ -29,7 +29,7 @@ const UserTemplateUpload: React.FC<UserTemplateUploadProps> = ({
   const MAX_CHARACTERS = 300;
   const MAX_NAME_CHARACTERS = 30;
   const MAX_DESCRIPTION_CHARACTERS = 100;
-  const { showToast } = useToast();
+  const { showToast } = useGlobalToast();
   
   // 防抖提交引用
   const submitTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -85,24 +85,67 @@ const UserTemplateUpload: React.FC<UserTemplateUploadProps> = ({
       });
 
       if (!response.ok) {
-        const error = await response.json();
-        // 处理不同类型的错误
-        if (response.status === 429) {
-          throw new Error(error.error || '请求过于频繁，请稍后再试');
-        } else if (response.status === 403) {
-          throw new Error('请求被拒绝，请检查网络环境');
-        } else {
-          throw new Error(error.error || '上传失败');
+        let errorMessage = '上传失败，请稍后重试';
+        
+        try {
+          const error = await response.json();
+          // 处理不同类型的错误
+          if (response.status === 429) {
+            errorMessage = error.error || '请求过于频繁，请稍后再试';
+          } else if (response.status === 403) {
+            errorMessage = '请求被拒绝，请检查网络环境';
+          } else if (response.status === 400) {
+            errorMessage = error.error || '请求参数错误，请检查输入内容';
+          } else if (response.status === 500) {
+            errorMessage = '服务器内部错误，请稍后重试';
+          } else if (response.status >= 500) {
+            errorMessage = '服务器暂时不可用，请稍后重试';
+          } else {
+            errorMessage = error.error || '上传失败，请稍后重试';
+          }
+        } catch (parseError) {
+          // 如果无法解析错误响应，使用默认错误消息
+          console.error('解析错误响应失败:', parseError);
+          if (response.status === 429) {
+            errorMessage = '请求过于频繁，请稍后再试';
+          } else if (response.status >= 500) {
+            errorMessage = '服务器暂时不可用，请稍后重试';
+          } else if (response.status >= 400) {
+            errorMessage = '请求失败，请检查输入内容';
+          }
         }
+        
+        throw new Error(errorMessage);
       }
 
-      showToast('模板上传成功！', 'success');
+      const result = await response.json();
+      console.log('API响应结果:', result);
+      
+      // 显示审核提示信息
+      if (result.needsApproval && result.message) {
+        console.log('显示审核提示:', result.message);
+        showToast(result.message, 'warning');
+      } else {
+        console.log('显示成功提示');
+        showToast('模板上传成功！', 'success');
+      }
+      
       setFormData({ name: '', description: '', overwatchCode: '' });
       setIsOpen(false);
       onUploadSuccess?.();
     } catch (error) {
       console.error('上传模板失败:', error);
-      showToast(error instanceof Error ? error.message : '上传失败', 'error');
+      
+      // 处理网络错误和其他异常
+      let errorMessage = '上传失败，请稍后重试';
+      
+      if (error instanceof TypeError && error.message.includes('fetch')) {
+        errorMessage = '网络连接失败，请检查网络连接后重试';
+      } else if (error instanceof Error) {
+        errorMessage = error.message;
+      }
+      
+      showToast(errorMessage, 'error');
     } finally {
       setIsLoading(false);
       setIsSubmitting(false);

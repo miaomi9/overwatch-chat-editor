@@ -16,6 +16,7 @@ export const useToast = () => {
   });
 
   const showToast = useCallback((message: string, type: 'success' | 'error' | 'warning' | 'info' = 'info') => {
+    console.log('showToast被调用:', { message, type });
     setToast({
       message,
       type,
