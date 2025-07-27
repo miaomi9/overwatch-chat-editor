@@ -38,3 +38,16 @@ model TemplateLike {
   @@unique([templateId, userIp]) // 防止同一IP重复点赞
   @@map("template_likes")
 }
+
+model TextureContribution {
+  id              String   @id @default(cuid())
+  txcCode         String   // TXC代码
+  chineseName     String   // 中文名称
+  canDisplayInGame Boolean // 是否在游戏中能显示
+  contributorIp   String   // 贡献者IP地址
+  isApproved      Boolean  @default(false) // 审核状态，默认未审核
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  @@map("texture_contributions")
+}

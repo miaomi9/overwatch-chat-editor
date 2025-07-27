@@ -11,10 +11,29 @@ const UpdateLogModal: React.FC<UpdateLogModalProps> = ({ isVisible, onClose }) =
   const [dontShowAgain, setDontShowAgain] = useState(false);
 
   // 当前版本号
-  const CURRENT_VERSION = '1.2.0';
+  const CURRENT_VERSION = '1.3.0';
   
   // 更新日志内容
   const updateLogs = [
+    {
+    version: '1.3.0',
+    date: '2025-07-28',
+    title: '纹理贡献与界面优化更新',
+    features: [
+      '🎨 新增纹理贡献功能，支持用户提交未收录纹理',
+      '🔒 完善的提交限制机制，每小时最多3次提交',
+      '⚡ 智能防抖处理，优化提交体验',
+      '🌈 全新深色主题模态框，提升视觉体验',
+      '✨ 优化纹理选择器界面，新增贡献按钮'
+     ],
+    improvements: [
+      '纹理贡献表单采用全局深色模态框显示',
+      '表单输入框与按钮统一使用深色主题样式',
+      '新增TXC代码格式和中文名称验证',
+      '优化错误提示和成功反馈信息',
+      '提交成功后3秒自动关闭弹窗'
+     ] 
+    },
     {
       version: '1.2.0',
       date: '2025-07-27',

@@ -42,7 +42,7 @@ const ChatEditor: React.FC = () => {
   const { showSuccess, showWarning } = useGlobalToast();
 
   // 当前版本号
-  const CURRENT_VERSION = '1.2.0';
+  const CURRENT_VERSION = '1.3.0';
 
   // 检查是否需要显示更新日志
   useEffect(() => {
