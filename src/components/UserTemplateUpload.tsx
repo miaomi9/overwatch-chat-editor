@@ -287,7 +287,8 @@ const UserTemplateUpload: React.FC<UserTemplateUploadProps> = ({
                         onChange={handleInputChange}
                         rows={2}
                         className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent resize-none"
-                        placeholder="请输入模板描述（可选）"
+                        placeholder="请输入模板描述"
+                        required
                       />
                       <div className="text-xs text-gray-500 mt-1">
                         {formData.description.length}/{MAX_DESCRIPTION_CHARACTERS} 字符
