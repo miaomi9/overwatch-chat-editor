@@ -1,0 +1,39 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model UserTemplate {
+  id            String   @id @default(cuid())
+  name          String   // 模板名称
+  description   String?  // 模板介绍
+  overwatchCode String   @db.Text // 守望先锋代码
+  creatorIp     String   // 创建者IP地址
+  likesCount    Int      @default(0) // 点赞数量
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  // 关联关系
+  likes         TemplateLike[]
+  
+  @@map("user_templates")
+}
+
+model TemplateLike {
+  id         String       @id @default(cuid())
+  templateId String
+  userIp     String       // 用户IP地址
+  createdAt  DateTime     @default(now())
+  
+  template   UserTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  
+  @@unique([templateId, userIp]) // 防止同一IP重复点赞
+  @@map("template_likes")
+}

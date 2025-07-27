@@ -60,6 +60,31 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // 验证字符长度限制
+    if (name.length > 100) {
+      return NextResponse.json(
+        { error: '模板名称不能超过100个字符' },
+        { status: 400 }
+      );
+    }
+
+    if (description.length > 500) {
+      return NextResponse.json(
+        { error: '模板描述不能超过500个字符' },
+        { status: 400 }
+      );
+    }
+
+    // 验证元素中的文本内容长度
+    for (const element of elements) {
+      if (element.content && element.content.length > 1000) {
+        return NextResponse.json(
+          { error: '元素内容不能超过1000个字符' },
+          { status: 400 }
+        );
+      }
+    }
+
     // 读取现有数据
     const fileContent = fs.readFileSync(TEMPLATES_FILE_PATH, 'utf-8');
     const data: TemplatesData = JSON.parse(fileContent);
@@ -111,6 +136,31 @@ export async function PUT(request: NextRequest) {
         { error: 'Missing required fields' },
         { status: 400 }
       );
+    }
+
+    // 验证字符长度限制
+    if (name.length > 100) {
+      return NextResponse.json(
+        { error: '模板名称不能超过100个字符' },
+        { status: 400 }
+      );
+    }
+
+    if (description.length > 500) {
+      return NextResponse.json(
+        { error: '模板描述不能超过500个字符' },
+        { status: 400 }
+      );
+    }
+
+    // 验证元素中的文本内容长度
+    for (const element of elements) {
+      if (element.content && element.content.length > 1000) {
+        return NextResponse.json(
+          { error: '元素内容不能超过1000个字符' },
+          { status: 400 }
+        );
+      }
     }
 
     // 读取现有数据

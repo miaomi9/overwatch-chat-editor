@@ -3,6 +3,8 @@
 import React, { useState, useEffect } from 'react';
 import Toast from './Toast';
 import { useToast } from '../hooks/useToast';
+import UserTemplateBrowser from './UserTemplateBrowser';
+import UserTemplateUpload from './UserTemplateUpload';
 
 interface TemplateElement {
   id: string;
@@ -36,17 +38,19 @@ interface TemplatesData {
 
 interface TemplateSelectorProps {
   onTemplateApply: (elements: any[]) => Promise<void>;
+  currentOverwatchCode?: string;
 }
 
-const TemplateSelector: React.FC<TemplateSelectorProps> = ({ onTemplateApply }) => {
+const TemplateSelector: React.FC<TemplateSelectorProps> = ({ onTemplateApply, currentOverwatchCode = '' }) => {
   const [templates, setTemplates] = useState<Template[]>([]);
   const [localTemplates, setLocalTemplates] = useState<Template[]>([]);
   const [selectedCategory, setSelectedCategory] = useState('全部');
-  const [activeTab, setActiveTab] = useState<'system' | 'user'>('system');
+  const [activeTab, setActiveTab] = useState<'system' | 'user' | 'community'>('system');
   const [isLoading, setIsLoading] = useState(true);
   const [categories, setCategories] = useState<string[]>(['全部']);
   const [searchTerm, setSearchTerm] = useState('');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [refreshCommunity, setRefreshCommunity] = useState(0);
 
   // 加载模板数据
   useEffect(() => {
@@ -174,6 +178,22 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({ onTemplateApply }) 
     await onTemplateApply(template.elements);
   };
 
+  // 处理社区模板应用
+  const handleApplyCommunityTemplate = (overwatchCode: string) => {
+    // 将守望先锋代码转换为元素格式
+    const elements = [{
+      id: Date.now().toString(),
+      type: 'text' as const,
+      content: overwatchCode
+    }];
+    onTemplateApply(elements);
+  };
+
+  // 处理模板上传成功
+  const handleUploadSuccess = () => {
+    setRefreshCommunity(prev => prev + 1);
+  };
+
   if (isLoading) {
     return (
       <div className="p-6 bg-gray-900/80 backdrop-blur-sm border border-orange-500/20 rounded-xl">
@@ -226,86 +246,113 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({ onTemplateApply }) 
         >
           我的模板 ({localTemplates.length})
         </button>
+        <button
+          onClick={() => {
+            setActiveTab('community');
+            setSelectedCategory('全部');
+          }}
+          className={`px-6 py-3 rounded-lg text-sm font-medium transition-all duration-200 ${
+            activeTab === 'community'
+              ? 'bg-gradient-to-r from-orange-600 to-orange-700 text-white shadow-lg'
+              : 'bg-gray-700/50 text-gray-300 hover:bg-gray-600/50 hover:text-white'
+          }`}
+        >
+          社区模板
+        </button>
       </div>
       
-      {/* 搜索和筛选区域 */}
-      <div className="mb-4 space-y-3">
-        {/* 搜索框 */}
-        <div className="relative">
-          <input
-            type="text"
-            placeholder="搜索模板名称或描述..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full px-4 py-3 pl-10 bg-gray-700/50 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all duration-200 text-sm"
-          />
-          <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
-          </div>
-          {searchTerm && (
-            <button
-              onClick={() => setSearchTerm('')}
-              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white transition-colors"
-            >
+      {/* 搜索和筛选区域 - 仅在非社区模板标签下显示 */}
+      {activeTab !== 'community' && (
+        <div className="mb-4 space-y-3">
+          {/* 搜索框 */}
+          <div className="relative">
+            <input
+              type="text"
+              placeholder="搜索模板名称或描述..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full px-4 py-3 pl-10 bg-gray-700/50 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all duration-200 text-sm"
+            />
+            <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
-            </button>
-          )}
-        </div>
-        
-        {/* 分类筛选和视图切换 */}
-        <div className="flex items-center justify-between gap-3">
-          {activeTab === 'system' && (
-            <select
-              value={selectedCategory}
-              onChange={(e) => setSelectedCategory(e.target.value)}
-              className="px-4 py-2 bg-gray-700/50 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all duration-200 text-sm flex-1"
-            >
-              {categories.map(category => (
-                <option key={category} value={category} className="bg-gray-700 text-white">{category}</option>
-              ))}
-            </select>
-          )}
+            </div>
+            {searchTerm && (
+              <button
+                onClick={() => setSearchTerm('')}
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white transition-colors"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            )}
+          </div>
           
-          {/* 视图模式切换 */}
-          <div className="flex gap-1 bg-gray-700/30 rounded-lg p-1">
-            <button
-              onClick={() => setViewMode('list')}
-              className={`px-3 py-1 rounded text-xs transition-all duration-200 ${
-                viewMode === 'list'
-                  ? 'bg-orange-600 text-white'
-                  : 'text-gray-400 hover:text-white'
-              }`}
-              title="列表视图"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" />
-              </svg>
-            </button>
-            <button
-              onClick={() => setViewMode('grid')}
-              className={`px-3 py-1 rounded text-xs transition-all duration-200 ${
-                viewMode === 'grid'
-                  ? 'bg-orange-600 text-white'
-                  : 'text-gray-400 hover:text-white'
-              }`}
-              title="网格视图"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
-              </svg>
-            </button>
+          {/* 分类筛选和视图切换 */}
+          <div className="flex items-center justify-between gap-3">
+            {activeTab === 'system' && (
+              <select
+                value={selectedCategory}
+                onChange={(e) => setSelectedCategory(e.target.value)}
+                className="px-4 py-2 bg-gray-700/50 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all duration-200 text-sm flex-1"
+              >
+                {categories.map(category => (
+                  <option key={category} value={category} className="bg-gray-700 text-white">{category}</option>
+                ))}
+              </select>
+            )}
+            
+            {/* 视图模式切换 */}
+            <div className="flex gap-1 bg-gray-700/30 rounded-lg p-1">
+              <button
+                onClick={() => setViewMode('list')}
+                className={`px-3 py-1 rounded text-xs transition-all duration-200 ${
+                  viewMode === 'list'
+                    ? 'bg-orange-600 text-white'
+                    : 'text-gray-400 hover:text-white'
+                }`}
+                title="列表视图"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+                </svg>
+              </button>
+              <button
+                onClick={() => setViewMode('grid')}
+                className={`px-3 py-1 rounded text-xs transition-all duration-200 ${
+                  viewMode === 'grid'
+                    ? 'bg-orange-600 text-white'
+                    : 'text-gray-400 hover:text-white'
+                }`}
+                title="网格视图"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+                </svg>
+              </button>
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* 模板列表 */}
-      <div className={`max-h-[70vh] overflow-y-auto custom-scrollbar ${
-        viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4' : 'space-y-3'
-      }`}>
+      {activeTab === 'community' ? (
+        <UserTemplateBrowser 
+          key={refreshCommunity}
+          onApplyTemplate={handleApplyCommunityTemplate}
+          shareButton={
+            <UserTemplateUpload 
+              onUploadSuccess={handleUploadSuccess}
+              currentOverwatchCode={currentOverwatchCode}
+            />
+          }
+        />
+      ) : (
+        <div className={`max-h-[70vh] overflow-y-auto custom-scrollbar ${
+          viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4' : 'space-y-3'
+        }`}>
         {filteredTemplates.length === 0 ? (
           <div className="text-center text-gray-500 py-8 col-span-full">
             <div className="text-4xl mb-2">
@@ -426,7 +473,8 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({ onTemplateApply }) 
             </div>
           ))
         )}
-      </div>
+        </div>
+      )}
       
       {/* 结果统计 */}
       {filteredTemplates.length > 0 && (

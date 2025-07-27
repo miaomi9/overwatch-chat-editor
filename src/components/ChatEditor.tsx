@@ -35,6 +35,8 @@ const ChatEditor: React.FC = () => {
   const [isLoadingTextures, setIsLoadingTextures] = useState(true);
   const [showSaveDialog, setShowSaveDialog] = useState(false);
   const [templateName, setTemplateName] = useState('');
+  
+  const MAX_TEMPLATE_NAME_CHARACTERS = 100;
   const [showUpdateLog, setShowUpdateLog] = useState(false);
   const { toast, showSuccess, showError, showWarning, hideToast } = useToast();
 
@@ -261,11 +263,32 @@ const ChatEditor: React.FC = () => {
               <input
                 type="text"
                 value={templateName}
-                onChange={(e) => setTemplateName(e.target.value)}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  if (value.length <= MAX_TEMPLATE_NAME_CHARACTERS) {
+                    setTemplateName(value);
+                  }
+                }}
                 placeholder="请输入模板名称..."
                 className="w-full px-3 py-2 bg-gray-800/50 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
                 autoFocus
               />
+              <div className="flex justify-between items-center mt-2">
+                <div className={`text-sm ${
+                  templateName.length > MAX_TEMPLATE_NAME_CHARACTERS * 0.9 
+                    ? 'text-red-400' 
+                    : templateName.length > MAX_TEMPLATE_NAME_CHARACTERS * 0.8 
+                    ? 'text-yellow-400' 
+                    : 'text-gray-400'
+                  }`}>
+                  {templateName.length}/{MAX_TEMPLATE_NAME_CHARACTERS} 字符
+                </div>
+                {templateName.length >= MAX_TEMPLATE_NAME_CHARACTERS && (
+                  <div className="text-xs text-red-500">
+                    已达到字符上限
+                  </div>
+                )}
+              </div>
             </div>
             <div className="flex gap-3 justify-end">
               <button
