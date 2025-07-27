@@ -12,6 +12,11 @@ export async function GET(request: NextRequest) {
     const search = searchParams.get('search') || '';
     const sortBy = searchParams.get('sortBy') || 'createdAt'; // createdAt, likesCount
     const order = searchParams.get('order') || 'desc';
+    const includeLikeStatus = searchParams.get('includeLikeStatus') === 'true';
+
+    // 获取客户端IP地址
+    const forwarded = request.headers.get('x-forwarded-for');
+    const ip = forwarded ? forwarded.split(',')[0] : request.headers.get('x-real-ip') || 'unknown';
 
     const skip = (page - 1) * limit;
 
@@ -38,6 +43,10 @@ export async function GET(request: NextRequest) {
         _count: {
           select: { likes: true },
         },
+        likes: includeLikeStatus ? {
+          where: { userIp: ip },
+          select: { id: true },
+        } : false,
       },
     });
 
@@ -53,6 +62,7 @@ export async function GET(request: NextRequest) {
         likesCount: template.likesCount,
         createdAt: template.createdAt,
         updatedAt: template.updatedAt,
+        liked: includeLikeStatus ? template.likes.length > 0 : undefined,
       })),
       pagination: {
         page,
