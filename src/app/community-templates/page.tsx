@@ -140,11 +140,15 @@ const CommunityTemplatesPage: React.FC = () => {
       setHasMore(data.templates.length === limit);
 
       // 更新点赞状态
-      const newLikedTemplates = new Set<string>();
-      data.templates.forEach((template: UserTemplate & { liked: boolean }) => {
-        if (template.liked) newLikedTemplates.add(template.id);
+      setLikedTemplates(prev => {
+        const newSet = new Set(prev);
+        data.templates.forEach((template: UserTemplate & { liked: boolean }) => {
+          if (template.liked) {
+            newSet.add(template.id);
+          }
+        });
+        return newSet;
       });
-      setLikedTemplates(newLikedTemplates);
     } catch (error) {
       console.error('获取模板失败:', error);
       showToast('获取模板失败', 'error');
