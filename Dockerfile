@@ -32,4 +32,4 @@ EXPOSE 3000
 RUN echo '#!/bin/sh\n\n# 等待数据库连接\necho "等待数据库连接..."\nuntil npx prisma db push --accept-data-loss 2>/dev/null; do\n  echo "数据库连接失败，5秒后重试..."\n  sleep 5\ndone\n\necho "数据库连接成功，启动应用..."\nnpm start' > /app/start.sh && chmod +x /app/start.sh
 
 # 启动应用
-CMD ["/app/start.sh"]
+CMD ["/bin/sh", "/app/start.sh"]
