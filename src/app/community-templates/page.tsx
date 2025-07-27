@@ -237,14 +237,15 @@ const CommunityTemplatesPage: React.FC = () => {
     throttledLike(templateId);
   };
 
-  const handleCopyCode = async (overwatchCode: string) => {
-    try {
-      await navigator.clipboard.writeText(overwatchCode);
-      showToast('代码已复制到剪贴板', 'success');
-    } catch (error) {
-      console.error('复制失败:', error);
-      showToast('复制失败', 'error');
-    }
+  const handleCopyCode = (code: string) => {
+    navigator.clipboard.writeText(code)
+      .then(() => {
+        showToast('代码已复制到剪贴板', 'success');
+      })
+      .catch((error) => {
+        console.error('复制失败:', error);
+        showToast('复制失败', 'error');
+      });
   };
 
   const handleShowDetails = (template: UserTemplate) => {

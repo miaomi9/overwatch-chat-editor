@@ -305,6 +305,8 @@ const ChatEditor: React.FC = () => {
       )}
       
       <div className="max-w-7xl mx-auto">
+
+
         <div className="flex justify-between items-center mb-6">
           <div className="flex items-center gap-6">
             <div className="flex items-center gap-3">
@@ -348,14 +350,26 @@ const ChatEditor: React.FC = () => {
             </div>
           </div>
           
-          <button
-            onClick={handleSaveToLocal}
-            className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 text-sm transition-colors"
-            disabled={elements.length === 0}
-            title={elements.length === 0 ? '请先添加一些元素' : '保存到本地缓存（更新后可能丢失）'}
-          >
-            保存为模板
-          </button>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => window.open('/community-templates', '_blank')}
+              className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-orange-500/20 to-orange-600/20 border border-orange-500/30 rounded-lg hover:from-orange-500/30 hover:to-orange-600/30 hover:border-orange-400/50 transition-all duration-200 group"
+            >
+              <span className="text-lg">🎨</span>
+              <span className="text-white text-sm font-medium">社区模板</span>
+              <svg className="w-4 h-4 text-orange-400 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+              </svg>
+            </button>
+            <button
+              onClick={handleSaveToLocal}
+              className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 text-sm transition-colors"
+              disabled={elements.length === 0}
+              title={elements.length === 0 ? '请先添加一些元素' : '保存到本地缓存（更新后可能丢失）'}
+            >
+              保存为模板
+            </button>
+          </div>
         </div>
         
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
