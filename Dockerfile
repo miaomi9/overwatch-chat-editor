@@ -10,10 +10,14 @@ COPY package*.json ./
 # 设置 npm 镜像源
 RUN npm config set registry https://registry.npmmirror.com
 
-# 配置 Alpine 镜像源以加速下载并安装 OpenSSL（解决 Prisma SSL 问题）
+# 配置 Alpine 镜像源以加速下载并安装 OpenSSL（解决 Prisma SSL 问题）和时区数据
 RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories && \
     apk update && \
-    apk add openssl
+    apk add openssl tzdata
+
+# 设置上海时区
+ENV TZ=Asia/Shanghai
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
 # 安装依赖
 RUN npm ci

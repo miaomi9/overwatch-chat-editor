@@ -18,11 +18,13 @@ model UserTemplate {
   creatorIp     String   // 创建者IP地址
   likesCount    Int      @default(0) // 点赞数量
   isApproved    Boolean  @default(false) // 审核状态，默认未审核
+  categoryId    String?  // 分类ID，可为空（老数据兼容）
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
   
   // 关联关系
   likes         TemplateLike[]
+  category      TemplateCategory? @relation(fields: [categoryId], references: [id])
   
   @@map("user_templates")
 }
@@ -37,6 +39,23 @@ model TemplateLike {
   
   @@unique([templateId, userIp]) // 防止同一IP重复点赞
   @@map("template_likes")
+}
+
+model TemplateCategory {
+  id          String   @id @default(cuid())
+  name        String   // 分类名称
+  parentId    String?  // 父分类ID，一级分类为null
+  displayOrder Int     @default(0) // 显示顺序
+  isActive    Boolean  @default(true) // 是否启用
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // 关联关系
+  parent      TemplateCategory? @relation("CategoryHierarchy", fields: [parentId], references: [id])
+  children    TemplateCategory[] @relation("CategoryHierarchy")
+  templates   UserTemplate[]
+  
+  @@map("template_categories")
 }
 
 model TextureContribution {

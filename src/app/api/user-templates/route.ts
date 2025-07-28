@@ -13,6 +13,7 @@ export async function GET(request: NextRequest) {
     const sortBy = searchParams.get('sortBy') || 'createdAt'; // createdAt, likesCount
     const order = searchParams.get('order') || 'desc';
     const includeLikeStatus = searchParams.get('includeLikeStatus') === 'true';
+    const categoryId = searchParams.get('categoryId') || '';
 
     // 获取客户端IP地址
     const forwarded = request.headers.get('x-forwarded-for');
@@ -21,15 +22,20 @@ export async function GET(request: NextRequest) {
     const skip = (page - 1) * limit;
 
     // 构建查询条件 - 只显示已审核的模板
-    const where = search
-      ? {
-          isApproved: true,
-          OR: [
-            { name: { contains: search } },
-            { description: { contains: search } },
-          ],
-        }
-      : { isApproved: true };
+    const where: any = {
+      isApproved: true,
+    };
+
+    if (search) {
+      where.OR = [
+        { name: { contains: search } },
+        { description: { contains: search } },
+      ];
+    }
+
+    if (categoryId) {
+      where.categoryId = categoryId;
+    }
 
     // 获取模板列表
     const templates = await prisma.userTemplate.findMany({
@@ -47,6 +53,18 @@ export async function GET(request: NextRequest) {
           where: { userIp: ip },
           select: { id: true },
         } : false,
+        category: {
+          select: {
+            id: true,
+            name: true,
+            parent: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+          },
+        },
       },
     });
 
@@ -63,6 +81,7 @@ export async function GET(request: NextRequest) {
         createdAt: template.createdAt,
         updatedAt: template.updatedAt,
         liked: includeLikeStatus ? template.likes.length > 0 : undefined,
+        category: template.category,
       })),
       pagination: {
         page,
@@ -113,7 +132,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { name, description, overwatchCode } = validation.data!;
+    const { name, description, overwatchCode, categoryId } = validation.data!;
 
     // 5. 获取客户端IP地址
     const forwarded = request.headers.get('x-forwarded-for');
@@ -144,6 +163,7 @@ export async function POST(request: NextRequest) {
         description: description || null,
         overwatchCode,
         creatorIp: ip,
+        categoryId: categoryId || 'uncategorized',
       },
     });
 

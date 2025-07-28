@@ -97,6 +97,11 @@ fi
 echo "⏳ 等待应用启动..."
 sleep 5
 
+# 在容器启动后添加数据库迁移
+echo "🔄 执行数据库迁移..."
+docker exec "$CONTAINER_NAME" npx prisma migrate deploy
+docker exec "$CONTAINER_NAME" npx prisma generate
+
 # 检查容器状态
 if docker ps --format "table {{.Names}}\t{{.Status}}" | grep -q "^$CONTAINER_NAME"; then
     echo "✅ 部署成功！"

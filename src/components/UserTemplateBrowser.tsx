@@ -15,6 +15,14 @@ interface UserTemplate {
   likesCount: number;
   createdAt: string;
   updatedAt: string;
+  category?: {
+    id: string;
+    name: string;
+    parent?: {
+      id: string;
+      name: string;
+    };
+  };
 }
 
 interface UserTemplateBrowserProps {
@@ -319,7 +327,24 @@ const UserTemplateBrowser: React.FC<UserTemplateBrowserProps> = ({ onApplyTempla
                  // 网格视图布局
                  <>
                    <div className="flex justify-between items-start mb-2">
-                     <h3 className="font-medium text-white group-hover:text-orange-300 transition-colors truncate flex-1 text-sm">{template.name}</h3>
+                     <div className="flex-1">
+                       <h3 className="font-medium text-white group-hover:text-orange-300 transition-colors truncate text-sm">{template.name}</h3>
+                       {template.category && (
+                         <div className="flex items-center gap-1 mt-1">
+                           {template.category.parent && (
+                             <>
+                               <span className="inline-block px-1.5 py-0.5 text-xs bg-blue-600/20 text-blue-300 rounded border border-blue-500/30">
+                                 {template.category.parent.name}
+                               </span>
+                               <span className="text-gray-400 text-xs">&gt;</span>
+                             </>
+                           )}
+                           <span className="inline-block px-1.5 py-0.5 text-xs bg-green-600/20 text-green-300 rounded border border-green-500/30">
+                             {template.category.name}
+                           </span>
+                         </div>
+                       )}
+                     </div>
                      <button
                        onClick={() => handleLike(template.id)}
                        className={`ml-2 flex items-center gap-1 px-1.5 py-0.5 rounded-full text-xs transition-colors duration-200 ${
@@ -411,9 +436,26 @@ const UserTemplateBrowser: React.FC<UserTemplateBrowserProps> = ({ onApplyTempla
                  <>
                    <div className="flex-1 min-w-0">
                      <div className="flex justify-between items-start mb-2">
-                       <h3 className="font-medium text-white group-hover:text-orange-300 transition-colors truncate flex-1 mr-2 text-sm">
-                         {template.name.length > 25 ? template.name.substring(0, 25) + '...' : template.name}
-                       </h3>
+                       <div className="flex-1 mr-2">
+                         <h3 className="font-medium text-white group-hover:text-orange-300 transition-colors truncate text-sm">
+                           {template.name.length > 25 ? template.name.substring(0, 25) + '...' : template.name}
+                         </h3>
+                         {template.category && (
+                           <div className="flex items-center gap-1 mt-1">
+                             {template.category.parent && (
+                               <>
+                                 <span className="inline-block px-1 py-0.5 text-xs bg-blue-600/20 text-blue-300 rounded border border-blue-500/30">
+                                   {template.category.parent.name}
+                                 </span>
+                                 <span className="text-gray-400 text-xs">&gt;</span>
+                               </>
+                             )}
+                             <span className="inline-block px-1 py-0.5 text-xs bg-green-600/20 text-green-300 rounded border border-green-500/30">
+                               {template.category.name}
+                             </span>
+                           </div>
+                         )}
+                       </div>
                        <button
                          onClick={() => handleLike(template.id)}
                          className={`flex items-center gap-1 px-1.5 py-0.5 rounded-full text-xs transition-colors duration-200 flex-shrink-0 ${

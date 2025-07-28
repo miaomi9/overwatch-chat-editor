@@ -12,6 +12,16 @@ interface UserTemplateUploadProps {
   currentOverwatchCode?: string;
 }
 
+interface TemplateCategory {
+  id: string;
+  name: string;
+  parentId: string | null;
+  displayOrder: number;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
 const UserTemplateUpload: React.FC<UserTemplateUploadProps> = ({
   onUploadSuccess,
   currentOverwatchCode = '',
@@ -23,8 +33,11 @@ const UserTemplateUpload: React.FC<UserTemplateUploadProps> = ({
     name: '',
     description: '',
     overwatchCode: currentOverwatchCode,
+    categoryId: '',
   });
   const [textures, setTextures] = useState<any[]>([]);
+  const [categories, setCategories] = useState<TemplateCategory[]>([]);
+  const [selectedParentCategory, setSelectedParentCategory] = useState<string>('');
   
   const MAX_CHARACTERS = 300;
   const MAX_NAME_CHARACTERS = 30;
@@ -44,7 +57,53 @@ const UserTemplateUpload: React.FC<UserTemplateUploadProps> = ({
         console.error('Failed to load textures:', error);
       }
     };
+
+    const loadCategories = async () => {
+      try {
+        const response = await fetch('/api/template-categories');
+        if (response.ok) {
+          const data = await response.json();
+          // 将层级结构转换为扁平数组
+          const flatCategories: TemplateCategory[] = [];
+          if (data.categories && Array.isArray(data.categories)) {
+            data.categories.forEach((parent: any) => {
+              // 添加父分类
+              flatCategories.push({
+                id: parent.id,
+                name: parent.name,
+                parentId: parent.parentId,
+                displayOrder: parent.displayOrder,
+                isActive: true,
+                createdAt: '',
+                updatedAt: ''
+              });
+              // 添加子分类
+              if (parent.children && Array.isArray(parent.children)) {
+                parent.children.forEach((child: any) => {
+                  flatCategories.push({
+                    id: child.id,
+                    name: child.name,
+                    parentId: child.parentId,
+                    displayOrder: child.displayOrder,
+                    isActive: true,
+                    createdAt: '',
+                    updatedAt: ''
+                  });
+                });
+              }
+            });
+          }
+           setCategories(flatCategories);
+           console.log('Loaded categories:', flatCategories);
+         }
+       } catch (error) {
+         console.error('Failed to load categories:', error);
+         setCategories([]);
+       }
+     };
+
     loadTextures();
+    loadCategories();
   }, []);
 
   // 解析当前代码为预览元素
@@ -71,7 +130,7 @@ const UserTemplateUpload: React.FC<UserTemplateUploadProps> = ({
   }, [formData.overwatchCode, textures]);
 
   // 实际提交函数
-  const performSubmit = useCallback(async (data: { name: string; description: string; overwatchCode: string }) => {
+  const performSubmit = useCallback(async (data: { name: string; description: string; overwatchCode: string; categoryId: string }) => {
     setIsLoading(true);
     setIsSubmitting(true);
     
@@ -130,7 +189,8 @@ const UserTemplateUpload: React.FC<UserTemplateUploadProps> = ({
         showToast('模板上传成功！', 'success');
       }
       
-      setFormData({ name: '', description: '', overwatchCode: '' });
+      setFormData({ name: '', description: '', overwatchCode: '', categoryId: '' });
+      setSelectedParentCategory('');
       setIsOpen(false);
       onUploadSuccess?.();
     } catch (error) {
@@ -159,8 +219,8 @@ const UserTemplateUpload: React.FC<UserTemplateUploadProps> = ({
     e.preventDefault();
     
     // 基本验证
-    if (!formData.name.trim() || !formData.overwatchCode.trim()) {
-      showToast('请填写模板名称和守望先锋代码', 'error');
+    if (!formData.name.trim() || !formData.description.trim() || !formData.overwatchCode.trim() || !formData.categoryId.trim()) {
+      showToast('请填写所有必填字段（模板名称、描述、分类和守望先锋代码）', 'error');
       return;
     }
 
@@ -194,6 +254,25 @@ const UserTemplateUpload: React.FC<UserTemplateUploadProps> = ({
     }
     
     setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleParentCategoryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const parentId = e.target.value;
+    setSelectedParentCategory(parentId);
+    setFormData(prev => ({ ...prev, categoryId: '' }));
+  };
+
+  const handleCategoryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const categoryId = e.target.value;
+    setFormData(prev => ({ ...prev, categoryId }));
+  };
+
+  const getChildCategories = (parentId: string) => {
+    return Array.isArray(categories) ? categories.filter(cat => cat.parentId === parentId) : [];
+  };
+
+  const getParentCategories = () => {
+    return Array.isArray(categories) ? categories.filter(cat => cat.parentId === null) : [];
   };
 
   const openModal = () => {
@@ -278,7 +357,7 @@ const UserTemplateUpload: React.FC<UserTemplateUploadProps> = ({
 
                     <div>
                       <label htmlFor="description" className="block text-sm font-medium text-gray-300 mb-2">
-                        模板描述
+                        模板描述 *
                       </label>
                       <textarea
                         id="description"
@@ -292,6 +371,45 @@ const UserTemplateUpload: React.FC<UserTemplateUploadProps> = ({
                       />
                       <div className="text-xs text-gray-500 mt-1">
                         {formData.description.length}/{MAX_DESCRIPTION_CHARACTERS} 字符
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-300 mb-2">
+                        分类选择 *
+                      </label>
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <select
+                            value={selectedParentCategory}
+                            onChange={handleParentCategoryChange}
+                            className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                            required
+                          >
+                            <option value="">选择主分类</option>
+                            {getParentCategories().map(category => (
+                              <option key={category.id} value={category.id}>
+                                {category.name}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                        <div>
+                          <select
+                            value={formData.categoryId}
+                            onChange={handleCategoryChange}
+                            disabled={!selectedParentCategory}
+                            className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
+                            required
+                          >
+                            <option value="">选择子分类</option>
+                            {selectedParentCategory && getChildCategories(selectedParentCategory).map(category => (
+                              <option key={category.id} value={category.id}>
+                                {category.name}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
                       </div>
                     </div>
 

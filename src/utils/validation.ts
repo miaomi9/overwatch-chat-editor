@@ -44,6 +44,7 @@ export const userTemplateSchema = z.object({
   name: createStringSchema(30, '模板名称'),
   description: createStringSchema(100, '模板描述'),
   overwatchCode: createOverwatchCodeSchema(300),
+  categoryId: z.string().optional(),
 });
 
 /**

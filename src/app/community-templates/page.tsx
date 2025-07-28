@@ -2,10 +2,13 @@
 
 import dynamic from 'next/dynamic';
 import React, { useState, useEffect, useCallback, Suspense } from 'react';
+import { useRouter } from 'next/navigation';
 import { useGlobalToast } from '@/contexts/ToastContext';
 import { parseOverwatchCode } from '@/utils/overwatchCodeParser';
 import { loadTexturesWithCache, type Texture } from '@/utils/textureCache';
 import { createApiThrottle, createDebounce } from '@/utils/debounceThrottle';
+import UserTemplateUpload from '@/components/UserTemplateUpload';
+import FavoriteTemplates from '@/components/FavoriteTemplates';
 
 // 动态导入组件
 const TemplateDetailModal = dynamic(
@@ -27,24 +30,37 @@ interface UserTemplate {
   likesCount: number;
   createdAt: string;
   updatedAt: string;
+  category?: {
+    id: string;
+    name: string;
+    parent?: {
+      id: string;
+      name: string;
+    };
+  };
 }
 
-interface UserTemplate {
+interface TemplateCategory {
   id: string;
   name: string;
-  description?: string;
-  overwatchCode: string;
-  likesCount: number;
-  createdAt: string;
-  updatedAt: string;
+  parentId: string | null;
+  children?: TemplateCategory[];
 }
 
 const CommunityTemplatesPage: React.FC = () => {
+  const router = useRouter();
   const [templates, setTemplates] = useState<UserTemplate[]>([]);
+  const [totalTemplates, setTotalTemplates] = useState(0);
   const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState<'createdAt' | 'likesCount'>('likesCount');
+  const [categories, setCategories] = useState<TemplateCategory[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState<string>('');
+  const [showCategoryFilter, setShowCategoryFilter] = useState<boolean>(false);
+  const [categorySearchTerm, setCategorySearchTerm] = useState('');
+  const [activeTab, setActiveTab] = useState<'community' | 'favorites'>('community');
+  const [favoriteTemplates, setFavoriteTemplates] = useState<Set<string>>(new Set());
 
   const [hasMore, setHasMore] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -54,9 +70,15 @@ const CommunityTemplatesPage: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { showToast } = useGlobalToast();
 
+  // 从localStorage加载收藏列表
+  useEffect(() => {
+    const savedFavorites = JSON.parse(localStorage.getItem('favoriteTemplates') || '[]');
+    setFavoriteTemplates(new Set(savedFavorites));
+  }, []);
+
   const limit = 12; // 增加每页显示数量
 
-  // 加载纹理数据
+  // 加载纹理数据和分类数据
   useEffect(() => {
     const loadTextures = async () => {
       try {
@@ -66,8 +88,37 @@ const CommunityTemplatesPage: React.FC = () => {
         console.error('Failed to load textures:', error);
       }
     };
+
+    const loadCategories = async () => {
+      try {
+        const response = await fetch('/api/template-categories');
+        if (response.ok) {
+          const data = await response.json();
+          setCategories(data.categories || []);
+        }
+      } catch (error) {
+        console.error('Failed to load categories:', error);
+      }
+    };
+
     loadTextures();
+    loadCategories();
   }, []);
+
+  // 点击外部关闭分类筛选下拉菜单
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as Element;
+      if (showCategoryFilter && !target.closest('.category-filter-dropdown')) {
+        setShowCategoryFilter(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showCategoryFilter]);
 
   // 为每个模板生成预览元素
   const [templatePreviews, setTemplatePreviews] = useState<{ [key: string]: any[] }>({});
@@ -123,6 +174,10 @@ const CommunityTemplatesPage: React.FC = () => {
         order: 'desc',
       });
 
+      if (selectedCategory) {
+        params.append('categoryId', selectedCategory);
+      }
+
       const response = await fetch(`/api/user-templates?${params}&includeLikeStatus=true`);
       if (!response.ok) {
         throw new Error('获取模板失败');
@@ -134,6 +189,11 @@ const CommunityTemplatesPage: React.FC = () => {
         setTemplates(data.templates);
       } else {
         setTemplates(prev => [...prev, ...data.templates]);
+      }
+      
+      // 更新总数
+      if (data.pagination && data.pagination.total !== undefined) {
+        setTotalTemplates(data.pagination.total);
       }
       
       // 检查是否还有更多数据
@@ -175,7 +235,7 @@ const CommunityTemplatesPage: React.FC = () => {
 
   useEffect(() => {
     fetchTemplates(true);
-  }, [debouncedSearchTerm, sortBy]);
+  }, [debouncedSearchTerm, sortBy, selectedCategory]);
 
   // 加载更多按钮
   const handleLoadMore = () => {
@@ -248,6 +308,20 @@ const CommunityTemplatesPage: React.FC = () => {
       });
   };
 
+  // 收藏/取消收藏
+  const handleToggleFavorite = (templateId: string) => {
+    const newFavorites = new Set(favoriteTemplates);
+    if (newFavorites.has(templateId)) {
+      newFavorites.delete(templateId);
+      showToast('已取消收藏', 'success');
+    } else {
+      newFavorites.add(templateId);
+      showToast('已添加到收藏', 'success');
+    }
+    setFavoriteTemplates(newFavorites);
+    localStorage.setItem('favoriteTemplates', JSON.stringify(Array.from(newFavorites)));
+  };
+
   const handleShowDetails = (template: UserTemplate) => {
     setSelectedTemplate(template);
     setIsModalOpen(true);
@@ -273,19 +347,59 @@ const CommunityTemplatesPage: React.FC = () => {
               </h1>
               <p className="text-gray-400 mt-2">发现和分享优秀的守望先锋聊天模板</p>
             </div>
-            <button
-              onClick={() => window.close()}
-              className="px-4 py-2 bg-gray-700 text-gray-300 rounded-lg hover:bg-gray-600 transition-colors duration-200"
-            >
-              返回编辑器
-            </button>
+            <div className="flex items-center gap-3">
+              <div className="w-48">
+                <UserTemplateUpload onUploadSuccess={() => fetchTemplates(true)} />
+              </div>
+              <button
+                onClick={() => router.push('/')}
+                className="px-4 py-2 bg-gray-700 text-gray-300 rounded-lg hover:bg-gray-600 transition-colors duration-200"
+              >
+                返回编辑器
+              </button>
+            </div>
           </div>
         </div>
       </div>
 
       {/* 主要内容 */}
       <div className="max-w-7xl mx-auto px-4 py-8">
-        {/* 搜索和筛选区域 */}
+        {/* 标签页导航 */}
+        <div className="mb-8">
+          <div className="flex items-center gap-1 bg-gray-800/50 p-1 rounded-lg w-fit">
+            <button
+              onClick={() => setActiveTab('community')}
+              className={`px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
+                activeTab === 'community'
+                  ? 'bg-orange-500 text-white shadow-lg'
+                  : 'text-gray-300 hover:text-white hover:bg-gray-700'
+              }`}
+            >
+              社区模板
+            </button>
+            <button
+              onClick={() => setActiveTab('favorites')}
+              className={`px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 flex items-center gap-2 ${
+                activeTab === 'favorites'
+                  ? 'bg-orange-500 text-white shadow-lg'
+                  : 'text-gray-300 hover:text-white hover:bg-gray-700'
+              }`}
+            >
+              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+              </svg>
+              我的收藏
+              {favoriteTemplates.size > 0 && (
+                <span className="bg-red-500 text-white text-xs rounded-full px-2 py-0.5 min-w-[20px] text-center">
+                  {favoriteTemplates.size}
+                </span>
+              )}
+            </button>
+          </div>
+        </div>
+
+        {/* 搜索和筛选区域 - 只在社区模板标签页显示 */}
+        {activeTab === 'community' && (
         <div className="mb-8 space-y-4">
           {/* 搜索框 */}
           <div className="relative max-w-md">
@@ -311,10 +425,106 @@ const CommunityTemplatesPage: React.FC = () => {
             )}
           </div>
 
-          {/* 排序控制 */}
-          <div className="flex justify-end items-center">
-            
+          {/* 分类筛选和排序控制 */}
+          <div className="flex items-center justify-between gap-4">
+            {/* 分类筛选 */}
+            <div className="relative">
+              <div className="flex items-center gap-4">
+                <label className="text-gray-300 text-sm font-medium">分类筛选:</label>
+                <div className="relative category-filter-dropdown">
+                   <button
+                     onClick={() => setShowCategoryFilter(!showCategoryFilter)}
+                     className="flex items-center gap-2 px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white hover:bg-gray-600 transition-all duration-200 min-w-[180px] justify-between"
+                   >
+                    <span className="text-sm">
+                      {selectedCategory ? 
+                        categories.find(cat => cat.children?.some(child => child.id === selectedCategory))?.children?.find(child => child.id === selectedCategory)?.name || '全部分类'
+                        : '全部分类'
+                      }
+                    </span>
+                    <svg className={`w-4 h-4 transition-transform duration-200 ${showCategoryFilter ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </button>
+                  
+                  {showCategoryFilter && (
+                    <div className="absolute top-full left-0 mt-2 w-80 bg-gray-800 border border-gray-600 rounded-lg shadow-xl z-50 max-h-96 overflow-hidden">
+                      <div className="p-3">
+                        {/* 搜索框 */}
+                        <div className="mb-3">
+                          <input
+                            type="text"
+                            placeholder="搜索分类..."
+                            value={categorySearchTerm}
+                            onChange={(e) => setCategorySearchTerm(e.target.value)}
+                            className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                          />
+                        </div>
+                        
+                        <div className="max-h-80 overflow-y-auto">
+                          <button
+                            onClick={() => {
+                              setSelectedCategory('');
+                              setShowCategoryFilter(false);
+                              setCategorySearchTerm('');
+                            }}
+                            className={`w-full text-left px-3 py-2 rounded-md text-sm font-medium transition-all duration-200 mb-2 ${
+                              selectedCategory === '' 
+                                ? 'bg-orange-500 text-white' 
+                                : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                            }`}
+                          >
+                            全部分类
+                          </button>
+                          
+                          {categories
+                            .map((category) => ({
+                              ...category,
+                              children: category.children?.filter((child) =>
+                                child.name.toLowerCase().includes(categorySearchTerm.toLowerCase())
+                              )
+                            }))
+                            .filter((category) => 
+                              !categorySearchTerm || 
+                              category.name.toLowerCase().includes(categorySearchTerm.toLowerCase()) ||
+                              (category.children && category.children.length > 0)
+                            )
+                            .map((category) => (
+                            <div key={category.id} className="mb-3">
+                              <h3 className="text-orange-400 text-xs font-semibold mb-2 px-3">{category.name}</h3>
+                              <div className="grid grid-cols-3 gap-1">
+                                {category.children?.map((child) => (
+                                  <button
+                                    key={child.id}
+                                    onClick={() => {
+                                      setSelectedCategory(child.id);
+                                      setShowCategoryFilter(false);
+                                      setCategorySearchTerm('');
+                                    }}
+                                    className={`px-2 py-1.5 rounded text-xs font-medium transition-all duration-200 text-left ${
+                                      selectedCategory === child.id
+                                        ? 'bg-orange-500 text-white'
+                                        : 'bg-gray-700 text-gray-300 hover:bg-gray-600 hover:text-white'
+                                    }`}
+                                    title={child.name}
+                                  >
+                                    {child.name}
+                                  </button>
+                                ))}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* 排序控制 */}
             <div className="flex items-center gap-4">
+              <label className="text-gray-300 text-sm font-medium">排序:</label>
               <select
                 value={sortBy}
                 onChange={(e) => {
@@ -327,14 +537,16 @@ const CommunityTemplatesPage: React.FC = () => {
               </select>
               
               <div className="text-sm text-gray-400">
-                共 {templates.length} 个模板
+                共 {totalTemplates} 个模板
               </div>
             </div>
           </div>
         </div>
+        )}
 
         {/* 模板列表 */}
-        {loading ? (
+        {activeTab === 'community' ? (
+          loading ? (
           <div className="flex justify-center items-center py-20">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500"></div>
           </div>
@@ -356,20 +568,51 @@ const CommunityTemplatesPage: React.FC = () => {
               {templates.map((template) => (
                 <div key={template.id} className="bg-gray-800/50 border border-gray-600/50 rounded-lg hover:border-orange-500/50 hover:bg-orange-500/5 transition-all duration-200 group p-4">
                   <div className="flex justify-between items-start mb-3">
-                    <h3 className="font-semibold text-white group-hover:text-orange-300 transition-colors truncate flex-1 text-base">{template.name}</h3>
-                    <button
-                      onClick={() => handleLike(template.id)}
-                      className={`ml-2 flex items-center gap-1 px-2 py-1 rounded-full text-sm transition-colors duration-200 ${
-                        likedTemplates.has(template.id)
-                          ? 'bg-red-600/20 text-red-400 hover:bg-red-600/30 border border-red-500/30'
-                          : 'bg-gray-600/50 text-gray-300 hover:bg-gray-600/70 border border-gray-500/30'
-                      }`}
-                    >
-                      <svg className="w-4 h-4" fill={likedTemplates.has(template.id) ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                      </svg>
-                      {template.likesCount}
-                    </button>
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-white group-hover:text-orange-300 transition-colors truncate text-base">{template.name}</h3>
+                      {template.category && (
+                        <div className="flex items-center gap-1 mt-2">
+                          {template.category.parent && (
+                            <>
+                              <span className="inline-block px-2 py-1 text-xs bg-blue-600/20 text-blue-300 rounded border border-blue-500/30">
+                                {template.category.parent.name}
+                              </span>
+                            </>
+                          )}
+                          <span className="inline-block px-2 py-1 text-xs bg-green-600/20 text-green-300 rounded border border-green-500/30">
+                            {template.category.name}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-1 ml-2">
+                      <button
+                        onClick={() => handleLike(template.id)}
+                        className={`flex items-center gap-1 px-2 py-1 rounded-full text-sm transition-colors duration-200 ${
+                          likedTemplates.has(template.id)
+                            ? 'bg-red-600/20 text-red-400 hover:bg-red-600/30 border border-red-500/30'
+                            : 'bg-gray-600/50 text-gray-300 hover:bg-gray-600/70 border border-gray-500/30'
+                        }`}
+                      >
+                        <svg className="w-4 h-4" fill={likedTemplates.has(template.id) ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                        </svg>
+                        {template.likesCount}
+                      </button>
+                      <button
+                        onClick={() => handleToggleFavorite(template.id)}
+                        className={`flex items-center gap-1 px-2 py-1 rounded-full text-sm transition-colors duration-200 ${
+                          favoriteTemplates.has(template.id)
+                            ? 'bg-yellow-600/20 text-yellow-400 hover:bg-yellow-600/30 border border-yellow-500/30'
+                            : 'bg-gray-600/50 text-gray-300 hover:bg-gray-600/70 border border-gray-500/30'
+                        }`}
+                        title={favoriteTemplates.has(template.id) ? '取消收藏' : '收藏'}
+                      >
+                        <svg className="w-4 h-4" fill={favoriteTemplates.has(template.id) ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24">
+                          <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                        </svg>
+                      </button>
+                    </div>
                   </div>
                   
                   {template.description && (
@@ -464,6 +707,14 @@ const CommunityTemplatesPage: React.FC = () => {
               </div>
             )}
           </div>
+          )
+        ) : (
+          <FavoriteTemplates
+            onCopyCode={handleCopyCode}
+            onShowDetails={handleShowDetails}
+            onLike={handleLike}
+            likedTemplates={likedTemplates}
+          />
         )}
 
         {/* 加载更多指示器 */}
