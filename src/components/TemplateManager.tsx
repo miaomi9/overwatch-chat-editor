@@ -58,6 +58,8 @@ const TemplateManager: React.FC<TemplateManagerProps> = ({ currentElements = [],
   const [showCategoryDialog, setShowCategoryDialog] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState('');
   const { toast, showSuccess, showError, showWarning, hideToast } = useToast();
+  
+  const MAX_CHARACTERS = 1000;
 
   useEffect(() => {
     loadTemplates();
@@ -489,11 +491,32 @@ const TemplateManager: React.FC<TemplateManagerProps> = ({ currentElements = [],
                 </label>
                 <textarea
                   value={overwatchCode}
-                  onChange={(e) => setOverwatchCode(e.target.value)}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    if (value.length <= MAX_CHARACTERS) {
+                      setOverwatchCode(value);
+                    }
+                  }}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono text-sm"
                   placeholder="请粘贴守望先锋聊天代码，例如：<t=1><#FF6D00>橙色文字</>"
                   rows={6}
                 />
+                <div className="flex justify-between items-center mt-2">
+                  <div className={`text-sm ${
+                    overwatchCode.length > MAX_CHARACTERS * 0.9 
+                      ? 'text-red-500' 
+                      : overwatchCode.length > MAX_CHARACTERS * 0.8 
+                      ? 'text-yellow-500' 
+                      : 'text-gray-500'
+                  }`}>
+                    {overwatchCode.length}/{MAX_CHARACTERS} 字符
+                  </div>
+                  {overwatchCode.length >= MAX_CHARACTERS && (
+                    <div className="text-xs text-red-500">
+                      已达到字符上限
+                    </div>
+                  )}
+                </div>
                 <p className="text-xs text-gray-500 mt-1">
                   支持守望先锋聊天格式代码，将作为文本元素保存
                 </p>
@@ -598,11 +621,32 @@ const TemplateManager: React.FC<TemplateManagerProps> = ({ currentElements = [],
                 </label>
                 <textarea
                   value={editOverwatchCode}
-                  onChange={(e) => setEditOverwatchCode(e.target.value)}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    if (value.length <= MAX_CHARACTERS) {
+                      setEditOverwatchCode(value);
+                    }
+                  }}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono text-sm"
                   rows={15}
                   placeholder="请输入守望先锋聊天代码，例如：<t=1><#FF6D00>橙色文字</>"
                 />
+                <div className="flex justify-between items-center mt-2">
+                  <div className={`text-sm ${
+                    editOverwatchCode.length > MAX_CHARACTERS * 0.9 
+                      ? 'text-red-500' 
+                      : editOverwatchCode.length > MAX_CHARACTERS * 0.8 
+                      ? 'text-yellow-500' 
+                      : 'text-gray-500'
+                  }`}>
+                    {editOverwatchCode.length}/{MAX_CHARACTERS} 字符
+                  </div>
+                  {editOverwatchCode.length >= MAX_CHARACTERS && (
+                    <div className="text-xs text-red-500">
+                      已达到字符上限
+                    </div>
+                  )}
+                </div>
                 <p className="text-xs text-gray-500 mt-1">
                   输入守望先锋聊天格式代码，将替换模板的所有元素
                 </p>

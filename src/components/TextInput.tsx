@@ -14,6 +14,15 @@ const TextInput: React.FC<TextInputProps> = ({ onAddText, onAddColoredText, onAd
   const [gradientStart, setGradientStart] = useState('#ff6600');
   const [gradientEnd, setGradientEnd] = useState('#0099ff');
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  
+  const MAX_CHARACTERS = 1000;
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const value = e.target.value;
+    if (value.length <= MAX_CHARACTERS) {
+      setInputText(value);
+    }
+  };
 
   const handleAddText = () => {
     if (inputText.trim()) {
@@ -50,11 +59,27 @@ const TextInput: React.FC<TextInputProps> = ({ onAddText, onAddColoredText, onAd
         <textarea
           ref={textareaRef}
           value={inputText}
-          onChange={(e) => setInputText(e.target.value)}
+          onChange={handleInputChange}
           placeholder="输入文字内容..."
           className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all duration-200 resize-none"
           rows={5}
         />
+        <div className="flex justify-between items-center mt-2">
+          <div className={`text-sm ${
+            inputText.length > MAX_CHARACTERS * 0.9 
+              ? 'text-red-400' 
+              : inputText.length > MAX_CHARACTERS * 0.8 
+              ? 'text-yellow-400' 
+              : 'text-gray-400'
+          }`}>
+            {inputText.length}/{MAX_CHARACTERS} 字符
+          </div>
+          {inputText.length >= MAX_CHARACTERS && (
+            <div className="text-xs text-red-400">
+              已达到字符上限
+            </div>
+          )}
+        </div>
         {inputText && (
           <button
             onClick={() => setInputText('')}

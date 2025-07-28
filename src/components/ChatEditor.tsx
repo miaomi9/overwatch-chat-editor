@@ -4,13 +4,14 @@ import React, { useState, useEffect } from 'react';
 import TextureSelector from './TextureSelector';
 import TextInput from './TextInput';
 import TemplateSelector from './TemplateSelector';
-import Toast from './Toast';
+
 import Preview from './Preview';
 import CodeGenerator from './CodeGenerator';
 import UpdateLogModal from './UpdateLogModal';
 import { parseOverwatchCode, containsOverwatchCode } from '@/utils/overwatchCodeParser';
-import { useToast } from '@/hooks/useToast';
+
 import { loadTexturesWithCache, type Texture as CachedTexture } from '@/utils/textureCache';
+import { useGlobalToast } from '@/contexts/ToastContext';
 
 // 使用缓存工具中的Texture类型
 type Texture = CachedTexture;
@@ -35,11 +36,13 @@ const ChatEditor: React.FC = () => {
   const [isLoadingTextures, setIsLoadingTextures] = useState(true);
   const [showSaveDialog, setShowSaveDialog] = useState(false);
   const [templateName, setTemplateName] = useState('');
+  
+  const MAX_TEMPLATE_NAME_CHARACTERS = 100;
   const [showUpdateLog, setShowUpdateLog] = useState(false);
-  const { toast, showSuccess, showError, showWarning, hideToast } = useToast();
+  const { showSuccess, showWarning } = useGlobalToast();
 
   // 当前版本号
-  const CURRENT_VERSION = '1.1.0';
+  const CURRENT_VERSION = '1.3.0';
 
   // 检查是否需要显示更新日志
   useEffect(() => {
@@ -217,13 +220,7 @@ const ChatEditor: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-orange-900 p-4 relative">
-      {/* Toast 组件 */}
-      <Toast
-        message={toast.message}
-        type={toast.type}
-        isVisible={toast.isVisible}
-        onClose={hideToast}
-      />
+
       
       {/* 更新日志弹窗 */}
       <UpdateLogModal
@@ -261,11 +258,32 @@ const ChatEditor: React.FC = () => {
               <input
                 type="text"
                 value={templateName}
-                onChange={(e) => setTemplateName(e.target.value)}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  if (value.length <= MAX_TEMPLATE_NAME_CHARACTERS) {
+                    setTemplateName(value);
+                  }
+                }}
                 placeholder="请输入模板名称..."
                 className="w-full px-3 py-2 bg-gray-800/50 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
                 autoFocus
               />
+              <div className="flex justify-between items-center mt-2">
+                <div className={`text-sm ${
+                  templateName.length > MAX_TEMPLATE_NAME_CHARACTERS * 0.9 
+                    ? 'text-red-400' 
+                    : templateName.length > MAX_TEMPLATE_NAME_CHARACTERS * 0.8 
+                    ? 'text-yellow-400' 
+                    : 'text-gray-400'
+                  }`}>
+                  {templateName.length}/{MAX_TEMPLATE_NAME_CHARACTERS} 字符
+                </div>
+                {templateName.length >= MAX_TEMPLATE_NAME_CHARACTERS && (
+                  <div className="text-xs text-red-500">
+                    已达到字符上限
+                  </div>
+                )}
+              </div>
             </div>
             <div className="flex gap-3 justify-end">
               <button
@@ -287,30 +305,71 @@ const ChatEditor: React.FC = () => {
       )}
       
       <div className="max-w-7xl mx-auto">
+
+
         <div className="flex justify-between items-center mb-6">
-          <div className="flex flex-col">
-            <h1 className="text-4xl font-bold text-center text-white bg-gradient-to-r from-orange-400 to-orange-600 bg-clip-text text-transparent">守望先锋聊天编辑器</h1>
-            <div className="mt-2 flex items-center justify-center gap-2">
-              <span className="text-gray-400 text-sm">不会使用？</span>
-              <a 
-                href="https://www.bilibili.com/video/BV1ncbRzGEJW/?share_source=copy_web&vd_source=46be8e2fa7c30d3bdf853b9c4adcd69b"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-orange-400 hover:text-orange-300 text-sm underline transition-colors flex items-center gap-1"
-              >
-                <span>📺</span>
-                查看视频食用教程！
+          <div className="flex items-center gap-6">
+            <div className="flex items-center gap-3">
+              <img src="https://ld5.res.netease.com/images/20241213/1734074185668_1f8923e771.svg" alt="Overwatch" className="w-10 h-10" />
+              <h1 className="text-4xl font-bold text-white bg-gradient-to-r from-orange-400 to-orange-600 bg-clip-text text-transparent">守望先锋聊天编辑器</h1>
+            </div>
+            
+            {/* 使用教程和项目信息 - 横向布局 */}
+            <div className="flex items-center gap-3">
+              {/* 视频教程 */}
+               <a 
+                 href="https://www.bilibili.com/video/BV1ncbRzGEJW/?share_source=copy_web&vd_source=46be8e2fa7c30d3bdf853b9c4adcd69b"
+                 target="_blank"
+                 rel="noopener noreferrer"
+                 className="flex items-center gap-2 px-3 py-2 bg-gradient-to-r from-blue-600/20 to-blue-700/20 border border-blue-500/30 rounded-lg hover:from-blue-600/30 hover:to-blue-700/30 hover:border-blue-400/50 transition-all duration-200 group"
+               >
+                 <img src="https://ts3.tc.mm.bing.net/th/id/ODF.HcIfqnk4n-lbffGcaqDC2w?w=32&h=32&qlt=90&pcl=fffffa&o=6&cb=thwsc4&pid=1.2" alt="Bilibili" className="w-5 h-5" />
+                 <span className="text-white text-sm font-medium">视频教程</span>
+                <div className="text-blue-400 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                  </svg>
+                </div>
+              </a>
+              
+              {/* 开源项目 */}
+               <a 
+                 href="https://github.com/MapleOAO/overwatch-chat-editor"
+                 target="_blank"
+                 rel="noopener noreferrer"
+                 className="flex items-center gap-2 px-3 py-2 bg-gradient-to-r from-green-600/20 to-green-700/20 border border-green-500/30 rounded-lg hover:from-green-600/30 hover:to-green-700/30 hover:border-green-400/50 transition-all duration-200 group"
+               >
+                 <img src="https://ts3.tc.mm.bing.net/th/id/ODF.bYAvaN8MCaSZfP0o7q_Z_w?w=32&h=32&qlt=90&pcl=fffffc&o=6&cb=thwsc4&pid=1.2" alt="GitHub" className="w-5 h-5" />
+                 <span className="text-white text-sm font-medium">GitHub</span>
+                <div className="text-green-400 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                  </svg>
+                </div>
               </a>
             </div>
           </div>
-          <button
-            onClick={handleSaveToLocal}
-            className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 text-sm"
-            disabled={elements.length === 0}
-            title={elements.length === 0 ? '请先添加一些元素' : '保存到本地缓存（更新后可能丢失）'}
-          >
-            保存为模板
-          </button>
+          
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => window.open('/community-templates', '_blank')}
+              className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-orange-500/20 to-orange-600/20 border border-orange-500/30 rounded-lg hover:from-orange-500/30 hover:to-orange-600/30 hover:border-orange-400/50 transition-all duration-200 group"
+            >
+              <span className="text-lg">🎨</span>
+              <span className="text-white text-sm font-medium">社区模板</span>
+              <svg className="w-4 h-4 text-orange-400 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+              </svg>
+            </button>
+            <button
+              onClick={handleSaveToLocal}
+              className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 text-sm transition-colors"
+              disabled={elements.length === 0}
+              title={elements.length === 0 ? '请先添加一些元素' : '保存到本地缓存（更新后可能丢失）'}
+            >
+              保存为模板
+            </button>
+          </div>
         </div>
         
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -407,6 +466,8 @@ const ChatEditor: React.FC = () => {
           </div>
         </div>
       </div>
+      
+
     </div>
   );
 };

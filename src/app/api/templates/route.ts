@@ -60,6 +60,31 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // 验证字符长度限制
+    if (name.length > 100) {
+      return NextResponse.json(
+        { error: '模板名称不能超过100个字符' },
+        { status: 400 }
+      );
+    }
+
+    if (description.length > 500) {
+      return NextResponse.json(
+        { error: '模板描述不能超过500个字符' },
+        { status: 400 }
+      );
+    }
+
+    // 验证元素中的文本内容长度
+    for (const element of elements) {
+      if (element.content && element.content.length > 1000) {
+        return NextResponse.json(
+          { error: '元素内容不能超过1000个字符' },
+          { status: 400 }
+        );
+      }
+    }
+
     // 读取现有数据
     const fileContent = fs.readFileSync(TEMPLATES_FILE_PATH, 'utf-8');
     const data: TemplatesData = JSON.parse(fileContent);
@@ -96,6 +121,86 @@ export async function POST(request: NextRequest) {
     console.error('Error creating template:', error);
     return NextResponse.json(
       { error: 'Failed to create template' },
+      { status: 500 }
+    );
+  }
+}
+
+// 更新模板
+export async function PUT(request: NextRequest) {
+  try {
+    const { id, name, description, elements, category } = await request.json();
+    
+    if (!id || !name || !description || !elements || !Array.isArray(elements)) {
+      return NextResponse.json(
+        { error: 'Missing required fields' },
+        { status: 400 }
+      );
+    }
+
+    // 验证字符长度限制
+    if (name.length > 100) {
+      return NextResponse.json(
+        { error: '模板名称不能超过100个字符' },
+        { status: 400 }
+      );
+    }
+
+    if (description.length > 500) {
+      return NextResponse.json(
+        { error: '模板描述不能超过500个字符' },
+        { status: 400 }
+      );
+    }
+
+    // 验证元素中的文本内容长度
+    for (const element of elements) {
+      if (element.content && element.content.length > 1000) {
+        return NextResponse.json(
+          { error: '元素内容不能超过1000个字符' },
+          { status: 400 }
+        );
+      }
+    }
+
+    // 读取现有数据
+    const fileContent = fs.readFileSync(TEMPLATES_FILE_PATH, 'utf-8');
+    const data: TemplatesData = JSON.parse(fileContent);
+
+    // 检查模板是否存在
+    if (!data.templates[id]) {
+      return NextResponse.json(
+        { error: 'Template not found' },
+        { status: 404 }
+      );
+    }
+
+    // 更新模板
+    const updatedTemplate: Template = {
+      ...data.templates[id],
+      name,
+      description,
+      elements,
+      category: category || data.templates[id].category || '其他',
+      updatedAt: new Date().toISOString()
+    };
+
+    data.templates[id] = updatedTemplate;
+
+    // 确保分类存在
+    if (category && !data.categories.includes(category)) {
+      data.categories.push(category);
+      data.categories.sort();
+    }
+
+    // 写回文件
+    fs.writeFileSync(TEMPLATES_FILE_PATH, JSON.stringify(data, null, 2), 'utf-8');
+
+    return NextResponse.json({ success: true, template: updatedTemplate });
+  } catch (error) {
+    console.error('Error updating template:', error);
+    return NextResponse.json(
+      { error: 'Failed to update template' },
       { status: 500 }
     );
   }
