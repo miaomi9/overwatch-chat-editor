@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import Link from 'next/link';
 import { useToast } from '@/hooks/useToast';
 import { createApiThrottle } from '@/utils/debounceThrottle';
 import Toast from '@/components/Toast';
@@ -8,7 +9,7 @@ import CardExchangeItem, { getCardRegionAndNumber } from '@/components/CardExcha
 import RegionFilter from '@/components/RegionFilter';
 import ActionTypeFilter from '@/components/ActionTypeFilter';
 import AddExchangeModal from '@/components/AddExchangeModal';
-import { PlusIcon, ArrowPathIcon, ExclamationTriangleIcon, CheckIcon, ArrowLeftIcon, ArrowRightIcon, SparklesIcon } from '@heroicons/react/24/outline';
+import { PlusIcon, ArrowPathIcon, ExclamationTriangleIcon, CheckIcon, ArrowLeftIcon, ArrowRightIcon, SparklesIcon, HomeIcon, UserGroupIcon } from '@heroicons/react/24/outline';
 
 interface CardExchange {
   id: string;
@@ -187,6 +188,28 @@ export default function OverwatchMarketPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white">
       <div className="container mx-auto px-4 py-6 lg:py-8 max-w-7xl">
+        {/* 导航链接 */}
+        <div className="flex items-center justify-between mb-6 lg:mb-8">
+          <div className="flex items-center gap-4">
+            <Link
+              href="/"
+              className="inline-flex items-center gap-2 px-4 py-2 bg-gray-800/50 hover:bg-gray-700/50 text-gray-300 hover:text-white rounded-lg transition-all duration-200 border border-gray-700/50 hover:border-gray-600/50"
+            >
+              <HomeIcon className="h-4 w-4" />
+              <span className="hidden sm:inline">返回编辑器</span>
+              <span className="sm:hidden">编辑器</span>
+            </Link>
+            <Link
+              href="/community-templates"
+              className="inline-flex items-center gap-2 px-4 py-2 bg-gray-800/50 hover:bg-gray-700/50 text-gray-300 hover:text-white rounded-lg transition-all duration-200 border border-gray-700/50 hover:border-gray-600/50"
+            >
+              <UserGroupIcon className="h-4 w-4" />
+              <span className="hidden sm:inline">社区模板</span>
+              <span className="sm:hidden">模板</span>
+            </Link>
+          </div>
+        </div>
+
         {/* 页面标题 */}
         <div className="text-center mb-8 lg:mb-12">
           <div className="inline-flex items-center gap-3 mb-4">
