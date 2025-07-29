@@ -189,7 +189,7 @@ const TextureSelector: React.FC<TextureSelectorProps> = ({ onTextureSelect, text
           <button
             key={texture.id}
             onClick={() => handleTextureClick(texture.id)}
-            className="p-2 bg-gray-700/30 border border-gray-600/50 rounded-lg hover:border-orange-500/50 hover:bg-orange-500/10 transition-all duration-200 group transform hover:scale-105 flex flex-col items-center min-h-[100px]"
+            className="p-2 bg-gray-700/30 border border-gray-600/50 rounded-lg hover:border-orange-500/50 hover:bg-orange-500/10 transition-all duration-200 group transform hover:scale-105 flex flex-col items-center min-h-[100px] break-all"
             title={texture.name}
           >
             <div className="w-10 h-10 mx-auto mb-1 bg-gray-600/30 rounded-lg flex items-center justify-center flex-shrink-0">
