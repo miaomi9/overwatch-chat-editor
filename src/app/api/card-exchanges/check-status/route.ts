@@ -60,6 +60,8 @@ export async function POST(request: NextRequest) {
       { status: 403 }
     );
   }
+  
+  try {
     // 获取所有活跃的卡片交换
     const activeExchanges = await prisma.cardExchange.findMany({
       where: {
