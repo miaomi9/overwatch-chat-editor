@@ -70,6 +70,16 @@
   background: rgba(251, 146, 60, 0.8);
 }
 
+/* 隐藏滚动条 */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
 /* 渐变文字效果 */
 .gradient-text {
   background: linear-gradient(45deg, #f97316, #fb923c, #fdba74);

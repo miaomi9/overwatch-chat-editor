@@ -70,3 +70,20 @@ model TextureContribution {
   
   @@map("texture_contributions")
 }
+
+model CardExchange {
+  id                      String   @id @default(cuid())
+  shareToken              String   @unique // 分享令牌
+  actionType              String   // 操作类型: ask, exchange, give
+  actionInitiatorAccount  String   // 发起者账号名
+  actionInitiatorCardId   Int      // 发起者卡片ID
+  actionAcceptCardId      Int      // 接受者卡片ID (exchange时使用)
+  status                  String   @default("active") // 状态: active, claimed, expired
+  creatorIp               String   // 发布者IP地址
+  originalUrl             String   @db.Text // 原始链接
+  lastCheckedAt           DateTime @default(now()) // 最后检查时间
+  createdAt               DateTime @default(now())
+  updatedAt               DateTime @updatedAt
+  
+  @@map("card_exchanges")
+}
