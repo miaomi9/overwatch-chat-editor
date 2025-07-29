@@ -160,7 +160,7 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({ onTemplateApply, cu
     }).filter(code => code.trim() !== '').join(' ');
   };
 
-  const { toast, showSuccess, showError } = useToast();
+  const { toast, showSuccess, showError, hideToast } = useToast();
 
   // 复制模板内容（守望先锋代码格式）
   const handleCopyTemplate = async (template: Template) => {
@@ -493,7 +493,7 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({ onTemplateApply, cu
         message={toast.message}
         type={toast.type}
         isVisible={toast.isVisible}
-        onClose={() => {}}
+        onClose={hideToast}
       />
     </div>
   );
