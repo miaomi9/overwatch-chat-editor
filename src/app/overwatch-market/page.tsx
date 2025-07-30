@@ -6,7 +6,7 @@ import { useToast } from '@/hooks/useToast';
 import { createApiThrottle } from '@/utils/debounceThrottle';
 import Toast from '@/components/Toast';
 import CardExchangeItem, { getCardRegionAndNumber } from '@/components/CardExchangeItem';
-import RegionFilter from '@/components/RegionFilter';
+import CardFilter from '@/components/CardFilter';
 import ActionTypeFilter from '@/components/ActionTypeFilter';
 import AddExchangeModal from '@/components/AddExchangeModal';
 import { AppreciationButton } from '@/components/AppreciationModal';
@@ -45,8 +45,8 @@ export default function OverwatchMarketPage() {
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [shareUrl, setShareUrl] = useState('');
-  const [selectedRegion, setSelectedRegion] = useState<string>('all');
-  const [selectedCardNumber, setSelectedCardNumber] = useState<number | null>(null);
+  const [selectedOfferCardId, setSelectedOfferCardId] = useState<number | null>(null);
+  const [selectedWantCardId, setSelectedWantCardId] = useState<number | null>(null);
   const [selectedActionType, setSelectedActionType] = useState<string>('all');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { toast, showToast, hideToast } = useToast();
@@ -67,12 +67,12 @@ export default function OverwatchMarketPage() {
         params.append('actionType', selectedActionType);
       }
       
-      if (selectedRegion !== 'all') {
-        params.append('region', selectedRegion);
+      if (selectedOfferCardId !== null) {
+        params.append('offerCardId', selectedOfferCardId.toString());
       }
       
-      if (selectedCardNumber !== null) {
-        params.append('cardNumber', selectedCardNumber.toString());
+      if (selectedWantCardId !== null) {
+        params.append('wantCardId', selectedWantCardId.toString());
       }
       
       const response = await fetch(`/api/card-exchanges?${params}`);
@@ -95,7 +95,7 @@ export default function OverwatchMarketPage() {
     } finally {
       setLoading(false);
     }
-  }, [pagination.limit, selectedActionType, selectedRegion, selectedCardNumber, showToast]);
+  }, [pagination.limit, selectedActionType, selectedOfferCardId, selectedWantCardId, showToast]);
 
   // 验证链接格式的函数
   const isValidShareUrl = (url: string): boolean => {
@@ -184,7 +184,7 @@ export default function OverwatchMarketPage() {
   // 页面加载时获取数据
   useEffect(() => {
     loadExchanges(1);
-  }, [selectedActionType, selectedRegion, selectedCardNumber]);
+  }, [loadExchanges, selectedActionType, selectedOfferCardId, selectedWantCardId]);
 
   // 倒计时状态
   const [nextCleanupTime, setNextCleanupTime] = useState<number>(10 * 60); // 10分钟倒计时
@@ -306,11 +306,11 @@ export default function OverwatchMarketPage() {
         <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700/50 rounded-2xl p-4 lg:p-6 mb-8">
           <div className="flex flex-col lg:flex-row gap-4 lg:gap-6 items-center justify-between">
             <div className="w-full lg:w-auto">
-              <RegionFilter
-                selectedRegion={selectedRegion}
-                selectedCardNumber={selectedCardNumber}
-                onRegionChange={setSelectedRegion}
-                onCardNumberChange={setSelectedCardNumber}
+              <CardFilter
+                selectedOfferCardId={selectedOfferCardId}
+                selectedWantCardId={selectedWantCardId}
+                onOfferCardChange={setSelectedOfferCardId}
+                onWantCardChange={setSelectedWantCardId}
               />
             </div>
             

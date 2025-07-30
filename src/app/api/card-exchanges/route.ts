@@ -97,8 +97,8 @@ export async function GET(request: NextRequest) {
     const limit = Math.min(parseInt(searchParams.get('limit') || '20'), 50);
     const actionType = searchParams.get('actionType');
     const status = searchParams.get('status') || 'active';
-    const region = searchParams.get('region');
-    const cardNumber = searchParams.get('cardNumber');
+    const offerCardId = searchParams.get('offerCardId');
+    const wantCardId = searchParams.get('wantCardId');
     
     const skip = (page - 1) * limit;
     
@@ -110,65 +110,58 @@ export async function GET(request: NextRequest) {
       where.actionType = actionType;
     }
     
-    // 根据地区和编号筛选卡片
-    if (region && ['cn', 'na', 'apac', 'emea'].includes(region)) {
-      if (cardNumber) {
-        // 如果指定了具体编号，计算对应的cardId
-        const number = parseInt(cardNumber);
-        let cardId: number;
-        switch (region) {
-          case 'cn':
-            if (number >= 1 && number <= 9) {
-              cardId = number;
-            } else {
-              return NextResponse.json({ error: '国服赛区编号范围为1-9' }, { status: 400 });
-            }
-            break;
-          case 'na':
-            if (number >= 1 && number <= 6) {
-              cardId = number + 9;
-            } else {
-              return NextResponse.json({ error: '北美赛区编号范围为1-6' }, { status: 400 });
-            }
-            break;
-          case 'apac':
-            if (number >= 1 && number <= 6) {
-              cardId = number + 15;
-            } else {
-              return NextResponse.json({ error: '亚太赛区编号范围为1-6' }, { status: 400 });
-            }
-            break;
-          case 'emea':
-            if (number >= 1 && number <= 6) {
-              cardId = number + 21;
-            } else {
-              return NextResponse.json({ error: '欧中非赛区编号范围为1-6' }, { status: 400 });
-            }
-            break;
-          default:
-            return NextResponse.json({ error: '无效的赛区' }, { status: 400 });
-        }
+    // 根据提供和需要的卡片ID进行筛选
+    if (offerCardId) {
+      const cardId = parseInt(offerCardId);
+      if (cardId >= 1 && cardId <= 27) {
+        // 具体卡片筛选
         where.actionInitiatorCardId = cardId;
-      } else {
-        // 如果没有指定编号，筛选整个赛区
-        let cardIdRange: number[] = [];
-        switch (region) {
-          case 'cn':
-            cardIdRange = [1, 2, 3, 4, 5, 6, 7, 8, 9];
-            break;
-          case 'na':
-            cardIdRange = [10, 11, 12, 13, 14, 15];
-            break;
-          case 'apac':
-            cardIdRange = [16, 17, 18, 19, 20, 21];
-            break;
-          case 'emea':
-            cardIdRange = [22, 23, 24, 25, 26, 27];
-            break;
-        }
-        where.actionInitiatorCardId = {
-          in: cardIdRange
+      } else if (cardId < 0) {
+        // 赛区筛选
+        const regionRanges = {
+          [-1]: [1, 9],   // 国服赛区
+          [-2]: [10, 15], // 北美赛区
+          [-3]: [16, 21], // 亚太赛区
+          [-4]: [22, 27]  // 欧中非赛区
         };
+        const range = regionRanges[cardId as keyof typeof regionRanges];
+        if (range) {
+          where.actionInitiatorCardId = {
+            gte: range[0],
+            lte: range[1]
+          };
+        } else {
+          return NextResponse.json({ error: '无效的提供卡片赛区ID' }, { status: 400 });
+        }
+      } else {
+        return NextResponse.json({ error: '无效的提供卡片ID' }, { status: 400 });
+      }
+    }
+    
+    if (wantCardId) {
+      const cardId = parseInt(wantCardId);
+      if (cardId >= 1 && cardId <= 27) {
+        // 具体卡片筛选
+        where.actionAcceptCardId = cardId;
+      } else if (cardId < 0) {
+        // 赛区筛选
+        const regionRanges = {
+          [-1]: [1, 9],   // 国服赛区
+          [-2]: [10, 15], // 北美赛区
+          [-3]: [16, 21], // 亚太赛区
+          [-4]: [22, 27]  // 欧中非赛区
+        };
+        const range = regionRanges[cardId as keyof typeof regionRanges];
+        if (range) {
+          where.actionAcceptCardId = {
+            gte: range[0],
+            lte: range[1]
+          };
+        } else {
+          return NextResponse.json({ error: '无效的需要卡片赛区ID' }, { status: 400 });
+        }
+      } else {
+        return NextResponse.json({ error: '无效的需要卡片ID' }, { status: 400 });
       }
     }
     
