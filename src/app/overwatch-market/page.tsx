@@ -46,6 +46,7 @@ export default function OverwatchMarketPage() {
   const [submitting, setSubmitting] = useState(false);
   const [shareUrl, setShareUrl] = useState('');
   const [selectedRegion, setSelectedRegion] = useState<string>('all');
+  const [selectedCardNumber, setSelectedCardNumber] = useState<number | null>(null);
   const [selectedActionType, setSelectedActionType] = useState<string>('all');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { toast, showToast, hideToast } = useToast();
@@ -64,6 +65,14 @@ export default function OverwatchMarketPage() {
       
       if (selectedActionType !== 'all') {
         params.append('actionType', selectedActionType);
+      }
+      
+      if (selectedRegion !== 'all') {
+        params.append('region', selectedRegion);
+      }
+      
+      if (selectedCardNumber !== null) {
+        params.append('cardNumber', selectedCardNumber.toString());
       }
       
       const response = await fetch(`/api/card-exchanges?${params}`);
@@ -86,7 +95,7 @@ export default function OverwatchMarketPage() {
     } finally {
       setLoading(false);
     }
-  }, [pagination.limit, selectedActionType, showToast]);
+  }, [pagination.limit, selectedActionType, selectedRegion, selectedCardNumber, showToast]);
 
   // 验证链接格式的函数
   const isValidShareUrl = (url: string): boolean => {
@@ -175,7 +184,7 @@ export default function OverwatchMarketPage() {
   // 页面加载时获取数据
   useEffect(() => {
     loadExchanges(1);
-  }, [selectedActionType]);
+  }, [selectedActionType, selectedRegion, selectedCardNumber]);
 
   // 倒计时状态
   const [nextCleanupTime, setNextCleanupTime] = useState<number>(10 * 60); // 10分钟倒计时
@@ -299,7 +308,9 @@ export default function OverwatchMarketPage() {
             <div className="w-full lg:w-auto">
               <RegionFilter
                 selectedRegion={selectedRegion}
+                selectedCardNumber={selectedCardNumber}
                 onRegionChange={setSelectedRegion}
+                onCardNumberChange={setSelectedCardNumber}
               />
             </div>
             
@@ -362,42 +373,26 @@ export default function OverwatchMarketPage() {
           </div>
         ) : (
           <div className="space-y-4">
-            {/* 筛选卡片 */}
-            {(() => {
-              // 根据地区筛选卡片
-              const filteredExchanges = selectedRegion === 'all' 
-                ? exchanges 
-                : exchanges.filter(exchange => {
-                    const { region } = getCardRegionAndNumber(exchange.actionInitiatorCardId);
-                    return region === selectedRegion;
-                  });
-              
-              if (filteredExchanges.length === 0) {
-                return (
-                  <div className="text-center py-12">
-                    <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700/50 rounded-2xl p-8">
-                      <ExclamationTriangleIcon className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                      <h3 className="text-xl font-semibold text-white mb-2">暂无卡片</h3>
-                      <p className="text-gray-400">当前筛选条件下没有找到卡片交换信息</p>
-                    </div>
-                  </div>
-                );
-              }
-              
-              return (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                  {filteredExchanges.map((exchange) => (
-                    <CardExchangeItem
-                      key={exchange.id}
-                      exchange={exchange}
-                      onCopyUrl={copyUrl}
-                      onStatusUpdate={handleStatusUpdate}
-                    />
-                  ))}
+            {exchanges.length === 0 ? (
+              <div className="text-center py-12">
+                <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700/50 rounded-2xl p-8">
+                  <ExclamationTriangleIcon className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+                  <h3 className="text-xl font-semibold text-white mb-2">暂无卡片</h3>
+                  <p className="text-gray-400">当前筛选条件下没有找到卡片交换信息</p>
                 </div>
-              );
-            })()
-            }
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                {exchanges.map((exchange) => (
+                  <CardExchangeItem
+                    key={exchange.id}
+                    exchange={exchange}
+                    onCopyUrl={copyUrl}
+                    onStatusUpdate={handleStatusUpdate}
+                  />
+                ))}
+              </div>
+            )}
           </div>
         )}
 

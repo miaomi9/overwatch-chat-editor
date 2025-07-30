@@ -69,7 +69,7 @@ async function fetchCardInfo(shareToken: string) {
 
 // GET - 获取卡片交换列表
 export async function GET(request: NextRequest) {
-  // 速率限制检查 - 每分钟最多20次
+  // 速率限制检查 - 每分钟最多30次
   const getRateLimit = createRateLimit({
     max: 30,
     windowMs: 60 * 1000,
@@ -97,6 +97,8 @@ export async function GET(request: NextRequest) {
     const limit = Math.min(parseInt(searchParams.get('limit') || '20'), 50);
     const actionType = searchParams.get('actionType');
     const status = searchParams.get('status') || 'active';
+    const region = searchParams.get('region');
+    const cardNumber = searchParams.get('cardNumber');
     
     const skip = (page - 1) * limit;
     
@@ -106,6 +108,68 @@ export async function GET(request: NextRequest) {
     
     if (actionType && ['ask', 'exchange', 'give'].includes(actionType)) {
       where.actionType = actionType;
+    }
+    
+    // 根据地区和编号筛选卡片
+    if (region && ['cn', 'na', 'apac', 'emea'].includes(region)) {
+      if (cardNumber) {
+        // 如果指定了具体编号，计算对应的cardId
+        const number = parseInt(cardNumber);
+        let cardId: number;
+        switch (region) {
+          case 'cn':
+            if (number >= 1 && number <= 9) {
+              cardId = number;
+            } else {
+              return NextResponse.json({ error: '国服赛区编号范围为1-9' }, { status: 400 });
+            }
+            break;
+          case 'na':
+            if (number >= 1 && number <= 6) {
+              cardId = number + 9;
+            } else {
+              return NextResponse.json({ error: '北美赛区编号范围为1-6' }, { status: 400 });
+            }
+            break;
+          case 'apac':
+            if (number >= 1 && number <= 6) {
+              cardId = number + 15;
+            } else {
+              return NextResponse.json({ error: '亚太赛区编号范围为1-6' }, { status: 400 });
+            }
+            break;
+          case 'emea':
+            if (number >= 1 && number <= 6) {
+              cardId = number + 21;
+            } else {
+              return NextResponse.json({ error: '欧中非赛区编号范围为1-6' }, { status: 400 });
+            }
+            break;
+          default:
+            return NextResponse.json({ error: '无效的赛区' }, { status: 400 });
+        }
+        where.actionInitiatorCardId = cardId;
+      } else {
+        // 如果没有指定编号，筛选整个赛区
+        let cardIdRange: number[] = [];
+        switch (region) {
+          case 'cn':
+            cardIdRange = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+            break;
+          case 'na':
+            cardIdRange = [10, 11, 12, 13, 14, 15];
+            break;
+          case 'apac':
+            cardIdRange = [16, 17, 18, 19, 20, 21];
+            break;
+          case 'emea':
+            cardIdRange = [22, 23, 24, 25, 26, 27];
+            break;
+        }
+        where.actionInitiatorCardId = {
+          in: cardIdRange
+        };
+      }
     }
     
     const [exchanges, total] = await Promise.all([
