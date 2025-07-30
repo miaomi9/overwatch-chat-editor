@@ -156,16 +156,16 @@ export default function CardExchangeItem({ exchange, onCopyUrl, onStatusUpdate, 
         showToast?.(result.message || '卡片仍然可用', 'success');
       }
     } catch (error) {
-      console.error('检查卡片状态失败:', error);
       const errorMessage = error instanceof Error ? error.message : '检查卡片状态失败，请重试';
       
       // 如果卡片已不是活跃状态，刷新页面
-      if (errorMessage.includes('卡片已不是活跃状态')) {
+      if (errorMessage.includes('卡片已不是活跃状态') || errorMessage.includes('检查卡片状态失败')) {
         showToast?.('卡片状态已变更，正在刷新页面...', 'warning');
         setTimeout(() => {
           onRefreshPage?.();
         }, 2000);
       } else {
+        console.error('检查卡片状态失败:', error);
         showToast?.(errorMessage, 'error');
       }
     } finally {
