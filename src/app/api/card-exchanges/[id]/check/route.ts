@@ -45,7 +45,7 @@ async function fetchCardInfo(shareToken: string) {
 }
 
 // 检查单个卡片状态
-export async function POST(request: NextRequest, { params }: { params: { id: string } }) {
+export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   // 1. 速率限制检查
   const rateLimitResult = await checkRateLimit(request);
   if (rateLimitResult) {
@@ -62,7 +62,7 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
   }
   
   try {
-    const { id } = params;
+    const { id } = await params;
     
     // 查找指定的卡片交换
     const exchange = await prisma.cardExchange.findUnique({
