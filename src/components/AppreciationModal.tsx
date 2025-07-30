@@ -76,7 +76,7 @@ const AppreciationModal: React.FC = () => {
         <div className="flex justify-center mb-6">
           <div className="bg-white p-4 rounded-lg">
             <Image
-              src="/appreciation/appreciation.jpg"
+              src="/appreciation/appreciation.png"
               alt="赞赏码"
               width={200}
               height={200}
