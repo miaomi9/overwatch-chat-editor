@@ -10,8 +10,10 @@ import {
   SparklesIcon,
   MagnifyingGlassIcon,
   BriefcaseIcon,
-  CursorArrowRaysIcon
+  CursorArrowRaysIcon,
+  ExclamationTriangleIcon
 } from '@heroicons/react/24/outline';
+import { useState } from 'react';
 
 interface CardExchange {
   id: string;
@@ -29,6 +31,7 @@ interface CardExchange {
 interface CardExchangeItemProps {
   exchange: CardExchange;
   onCopyUrl: (url: string) => void;
+  onStatusUpdate?: (id: string, newStatus: string) => void;
 }
 
 const ACTION_TYPE_LABELS = {
@@ -105,7 +108,40 @@ const formatDate = (dateString: string): string => {
   }
 };
 
-export default function CardExchangeItem({ exchange, onCopyUrl }: CardExchangeItemProps) {
+export default function CardExchangeItem({ exchange, onCopyUrl, onStatusUpdate }: CardExchangeItemProps) {
+  const [isChecking, setIsChecking] = useState(false);
+  
+  // 主动检查卡片状态
+  const handleCheckStatus = async () => {
+    if (isChecking) return;
+    
+    setIsChecking(true);
+    try {
+      const response = await fetch(`/api/card-exchanges/${exchange.id}/check`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      if (!response.ok) {
+        throw new Error('检查失败');
+      }
+      
+      const result = await response.json();
+      
+      if (result.statusChanged && onStatusUpdate) {
+        onStatusUpdate(exchange.id, result.status);
+      }
+      
+      // 可以添加toast提示
+      console.log(result.message);
+    } catch (error) {
+      console.error('检查卡片状态失败:', error);
+    } finally {
+      setIsChecking(false);
+    }
+  };
   const initiatorCardInfo = getCardRegionAndNumber(exchange.actionInitiatorCardId);
   const acceptCardInfo = exchange.actionAcceptCardId ? getCardRegionAndNumber(exchange.actionAcceptCardId) : null;
 
@@ -283,13 +319,31 @@ export default function CardExchangeItem({ exchange, onCopyUrl }: CardExchangeIt
             <ClockIcon className="h-3 w-3 sm:h-4 sm:w-4 text-orange-400" />
             <span className="font-medium">{formatDate(exchange.createdAt)}</span>
           </div>
-          <div className={`flex items-center gap-1 px-2 py-1 rounded-lg ${
-            exchange.status === 'active' ? 'text-green-400 bg-green-500/10' :
-            exchange.status === 'claimed' ? 'text-gray-400 bg-gray-500/10' :
-            'text-red-400 bg-red-500/10'
-          }`}>
-            <SparklesIcon className="h-3 w-3 sm:h-4 sm:w-4" />
-            <span className="font-medium hidden sm:inline">可用</span>
+          <div className="flex items-center gap-2">
+            <div className={`flex items-center gap-1 px-2 py-1 rounded-lg ${
+              exchange.status === 'active' ? 'text-green-400 bg-green-500/10' :
+              exchange.status === 'claimed' ? 'text-gray-400 bg-gray-500/10' :
+              'text-red-400 bg-red-500/10'
+            }`}>
+              <SparklesIcon className="h-3 w-3 sm:h-4 sm:w-4" />
+              <span className="font-medium hidden sm:inline">可用</span>
+            </div>
+            
+            {exchange.status === 'active' && (
+               <button
+                 onClick={handleCheckStatus}
+                 disabled={isChecking}
+                 className="px-2 py-1 bg-gradient-to-r from-red-600/90 to-red-700/90 text-white rounded-lg text-xs hover:from-red-500 hover:to-red-600 transition-all duration-300 flex items-center gap-1 hover:scale-105 font-semibold shadow-lg hover:shadow-red-500/25 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 whitespace-nowrap"
+                 title="上报已使用"
+               >
+                 {isChecking ? (
+                   <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white"></div>
+                 ) : (
+                   <ExclamationTriangleIcon className="h-3 w-3" />
+                 )}
+                 <span className="text-xs">{isChecking ? '检查中' : '上报已使用'}</span>
+               </button>
+             )}
           </div>
         </div>
         <div className="flex gap-2 sm:gap-3">
@@ -302,6 +356,7 @@ export default function CardExchangeItem({ exchange, onCopyUrl }: CardExchangeIt
             <span className="hidden sm:inline">复制链接</span>
             <span className="sm:hidden">复制</span>
           </button>
+          
           <a
             href={exchange.originalUrl}
             target="_blank"

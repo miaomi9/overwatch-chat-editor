@@ -176,14 +176,55 @@ export default function OverwatchMarketPage() {
     loadExchanges(1);
   }, [selectedActionType]);
 
+  // 倒计时状态
+  const [nextCleanupTime, setNextCleanupTime] = useState<number>(10 * 60); // 10分钟倒计时
+
   // 每10分钟自动刷新
   useEffect(() => {
     const interval = setInterval(() => {
       loadExchanges(pagination.page);
+      setNextCleanupTime(10 * 60); // 重置倒计时
     }, 10 * 60 * 1000); // 10分钟
     
     return () => clearInterval(interval);
   }, [loadExchanges, pagination.page]);
+
+  // 倒计时更新
+  useEffect(() => {
+    const countdown = setInterval(() => {
+      setNextCleanupTime(prev => {
+        if (prev <= 1) {
+          return 10 * 60; // 重置为10分钟
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(countdown);
+  }, []);
+
+  // 格式化倒计时显示
+  const formatCountdown = (seconds: number): string => {
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = seconds % 60;
+    return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+  };
+
+  // 处理卡片状态更新
+  const handleStatusUpdate = useCallback((id: string, newStatus: string) => {
+    setExchanges(prev => prev.map(exchange => 
+      exchange.id === id ? { ...exchange, status: newStatus as 'active' | 'claimed' | 'expired' } : exchange
+    ));
+    
+    // 如果状态变为已领取，显示提示并重新加载数据
+    if (newStatus === 'claimed') {
+      showToast('卡片状态已更新为已领取', 'success');
+      // 延迟重新加载以确保数据同步
+      setTimeout(() => {
+        loadExchanges(pagination.page);
+      }, 1000);
+    }
+  }, [showToast, loadExchanges, pagination.page]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white">
@@ -259,12 +300,23 @@ export default function OverwatchMarketPage() {
             </div>
             
             <div className="flex items-center gap-4 w-full lg:w-auto justify-between lg:justify-end">
-              <div className="flex items-center gap-2 text-sm lg:text-base">
-                <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-                <span className="text-gray-300">活跃卡片</span>
-                <span className="font-semibold text-white bg-gray-700 px-2 py-1 rounded-lg">
-                  {pagination.total}
-                </span>
+              <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2 text-sm lg:text-base">
+                  <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                  <span className="text-gray-300">活跃卡片</span>
+                  <span className="font-semibold text-white bg-gray-700 px-2 py-1 rounded-lg">
+                    {pagination.total}
+                  </span>
+                </div>
+                
+                {/* 倒计时显示 */}
+                <div className="flex items-center gap-2 text-sm lg:text-base">
+                  <div className="w-2 h-2 bg-orange-400 rounded-full animate-pulse"></div>
+                  <span className="text-gray-300">下次检查活跃状态</span>
+                  <span className="font-semibold text-orange-300 bg-orange-500/20 px-2 py-1 rounded-lg font-mono">
+                    {formatCountdown(nextCleanupTime)}
+                  </span>
+                </div>
               </div>
               
               <button
@@ -335,6 +387,7 @@ export default function OverwatchMarketPage() {
                       key={exchange.id}
                       exchange={exchange}
                       onCopyUrl={copyUrl}
+                      onStatusUpdate={handleStatusUpdate}
                     />
                   ))}
                 </div>
