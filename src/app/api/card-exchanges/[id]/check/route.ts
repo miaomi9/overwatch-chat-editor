@@ -5,7 +5,7 @@ import { isSuspiciousUserAgent } from '@/utils/validation';
 
 // 创建速率限制器 - 每分钟最多3次检查
 const checkRateLimit = createRateLimit({
-  max: 3,
+  max: 5,
   windowMs: 60 * 1000, // 1分钟
   message: '检查过于频繁，请稍后再试。',
 });
