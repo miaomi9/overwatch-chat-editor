@@ -7,9 +7,9 @@ import { initializeServerTasks } from '@/utils/serverInit';
 
 // 创建速率限制器 - 每小时最多10次提交
 const submitRateLimit = createRateLimit({
-  max: 10,
+  max: 20,
   windowMs: 60 * 60 * 1000, // 1小时
-  message: '提交过于频繁，请1小时后再试。每小时最多可提交10次卡片交换。',
+  message: '提交过于频繁，请1小时后再试。每小时最多可提交20次卡片交换。',
 });
 
 // 验证schema
@@ -71,7 +71,7 @@ async function fetchCardInfo(shareToken: string) {
 export async function GET(request: NextRequest) {
   // 速率限制检查 - 每分钟最多20次
   const getRateLimit = createRateLimit({
-    max: 20,
+    max: 30,
     windowMs: 60 * 1000,
     message: '查询过于频繁，请稍后再试。',
   });
