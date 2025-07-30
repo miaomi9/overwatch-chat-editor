@@ -9,6 +9,7 @@ import { loadTexturesWithCache, type Texture } from '@/utils/textureCache';
 import { createApiThrottle, createDebounce } from '@/utils/debounceThrottle';
 import UserTemplateUpload from '@/components/UserTemplateUpload';
 import FavoriteTemplates from '@/components/FavoriteTemplates';
+import { AppreciationButton } from '@/components/AppreciationModal';
 
 // 动态导入组件
 const TemplateDetailModal = dynamic(
@@ -351,6 +352,7 @@ const CommunityTemplatesPage: React.FC = () => {
               <div className="w-48">
                 <UserTemplateUpload onUploadSuccess={() => fetchTemplates(true)} />
               </div>
+               <AppreciationButton className="text-sm" />
               <button
                 onClick={() => router.push('/overwatch-market')}
                 className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-purple-700 text-white rounded-lg hover:from-purple-700 hover:to-purple-800 transition-all duration-200"

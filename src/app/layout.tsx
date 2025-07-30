@@ -4,6 +4,7 @@ import "./globals.css";
 
 import App from "../app";
 import { ToastProvider } from "@/contexts/ToastContext";
+import { AppreciationProvider } from "@/components/AppreciationModal";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -32,8 +33,10 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <ToastProvider>
-          <App />
-          {children}
+          <AppreciationProvider>
+            <App />
+            {children}
+          </AppreciationProvider>
         </ToastProvider>
       </body>
     </html>

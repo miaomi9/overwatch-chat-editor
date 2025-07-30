@@ -9,6 +9,7 @@ import CardExchangeItem, { getCardRegionAndNumber } from '@/components/CardExcha
 import RegionFilter from '@/components/RegionFilter';
 import ActionTypeFilter from '@/components/ActionTypeFilter';
 import AddExchangeModal from '@/components/AddExchangeModal';
+import { AppreciationButton } from '@/components/AppreciationModal';
 import { PlusIcon, ArrowPathIcon, ExclamationTriangleIcon, CheckIcon, ArrowLeftIcon, ArrowRightIcon, SparklesIcon, HomeIcon, UserGroupIcon } from '@heroicons/react/24/outline';
 
 interface CardExchange {
@@ -248,6 +249,9 @@ export default function OverwatchMarketPage() {
               <span className="hidden sm:inline">社区模板</span>
               <span className="sm:hidden">模板</span>
             </Link>
+          </div>
+          <div className="flex items-center">
+            <AppreciationButton className="text-sm" />
           </div>
         </div>
 

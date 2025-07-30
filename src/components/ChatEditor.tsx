@@ -5,6 +5,7 @@ import Image from 'next/image';
 import TextureSelector from './TextureSelector';
 import TextInput from './TextInput';
 import TemplateSelector from './TemplateSelector';
+import { AppreciationButton } from './AppreciationModal';
 
 import Preview from './Preview';
 import CodeGenerator from './CodeGenerator';
@@ -368,6 +369,7 @@ const ChatEditor: React.FC = () => {
           </div>
           
           <div className="flex items-center gap-3">
+            <AppreciationButton className="text-sm" />
             <button
               onClick={() => window.open('/community-templates', '_blank')}
               className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-orange-500/20 to-orange-600/20 border border-orange-500/30 rounded-lg hover:from-orange-500/30 hover:to-orange-600/30 hover:border-orange-400/50 transition-all duration-200 group"
