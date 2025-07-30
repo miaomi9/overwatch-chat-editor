@@ -49,34 +49,41 @@ if ! docker info &> /dev/null; then
     exit 1
 fi
 
-# 停止并删除现有容器（如果存在）
+# 检查现有容器状态
 echo "🔍 检查现有容器..."
+OLD_CONTAINER_EXISTS=false
 if docker ps -a --format "table {{.Names}}" | grep -q "^$CONTAINER_NAME$"; then
-    echo "🛑 停止现有容器: $CONTAINER_NAME"
-    docker stop "$CONTAINER_NAME" || true
-    echo "🗑️  删除现有容器: $CONTAINER_NAME"
-    docker rm "$CONTAINER_NAME" || true
+    OLD_CONTAINER_EXISTS=true
+    echo "📦 发现现有容器: $CONTAINER_NAME"
 fi
 
-# 检查端口是否被占用
-echo "🔍 检查端口 $PORT 是否可用..."
-if lsof -Pi :$PORT -sTCP:LISTEN -t >/dev/null 2>&1; then
-    echo "⚠️  警告: 端口 $PORT 已被占用"
-    read -p "是否继续部署？这可能会导致端口冲突 (y/N): " -n 1 -r
-    echo
-    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-        echo "❌ 部署已取消"
-        exit 1
-    fi
-fi
-
-# 构建 Docker 镜像
+# 构建 Docker 镜像（优先进行，避免服务中断）
 echo "🔨 构建 Docker 镜像..."
 docker build -t "$IMAGE_NAME" .
 
 if [ $? -ne 0 ]; then
     echo "❌ 错误: Docker 镜像构建失败"
     exit 1
+fi
+
+# 如果存在旧容器，先停止并删除（构建完成后快速切换）
+if [ "$OLD_CONTAINER_EXISTS" = true ]; then
+    echo "🛑 停止现有容器: $CONTAINER_NAME"
+    docker stop "$CONTAINER_NAME" || true
+    echo "🗑️  删除现有容器: $CONTAINER_NAME"
+    docker rm "$CONTAINER_NAME" || true
+else
+    # 检查端口是否被占用（仅在没有旧容器时检查）
+    echo "🔍 检查端口 $PORT 是否可用..."
+    if lsof -Pi :$PORT -sTCP:LISTEN -t >/dev/null 2>&1; then
+        echo "⚠️  警告: 端口 $PORT 已被占用"
+        read -p "是否继续部署？这可能会导致端口冲突 (y/N): " -n 1 -r
+        echo
+        if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+            echo "❌ 部署已取消"
+            exit 1
+        fi
+    fi
 fi
 
 # 运行容器
