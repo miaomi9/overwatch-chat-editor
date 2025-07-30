@@ -2,8 +2,11 @@ import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
-// 从暴雪API获取卡片信息
+// 从暴雪API获取卡片信息（优化版）
 async function fetchCardInfo(shareToken: string) {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 10000); // 10秒超时
+  
   try {
     const response = await fetch(
       `https://webapi.blizzard.cn/ow-champion-game-center/ccc-card/share/info?share_token=${shareToken}`,
@@ -11,8 +14,11 @@ async function fetchCardInfo(shareToken: string) {
         headers: {
           'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
         },
+        signal: controller.signal,
       }
     );
+    
+    clearTimeout(timeoutId);
     
     if (!response.ok) {
       console.error(`暴雪API请求失败: ${response.status} ${response.statusText}`);
@@ -27,19 +33,30 @@ async function fetchCardInfo(shareToken: string) {
     }
     
     return { claimed: false, ...data.data };
-  } catch (error) {
-    console.error('获取卡片信息失败:', error);
+  } catch (error: any) {
+    clearTimeout(timeoutId);
+    if (error.name === 'AbortError') {
+      console.error(`请求超时: ${shareToken}`);
+    } else {
+      console.error('获取卡片信息失败:', error);
+    }
     return null;
   }
 }
 
-// 检查单个卡片状态
+// 检查单个卡片状态（优化版）
 async function checkSingleCardStatus(exchange: any) {
   try {
     const cardInfo = await fetchCardInfo(exchange.shareToken);
     
     if (!cardInfo) {
-      console.error(`无法获取卡片信息: ${exchange.shareToken}`);
+      // 更新最后检查时间，即使失败也要记录
+      await prisma.cardExchange.update({
+        where: { id: exchange.id },
+        data: {
+          lastCheckedAt: new Date(),
+        },
+      });
       return false;
     }
     
@@ -52,7 +69,6 @@ async function checkSingleCardStatus(exchange: any) {
           lastCheckedAt: new Date(),
         },
       });
-      console.log(`卡片 ${exchange.shareToken} 已被领取，状态已更新`);
       return true;
     } else {
       // 更新最后检查时间
@@ -66,64 +82,171 @@ async function checkSingleCardStatus(exchange: any) {
     }
   } catch (error) {
     console.error(`检查卡片状态失败 ${exchange.shareToken}:`, error);
-    return false;
+    // 即使出错也要更新检查时间，避免重复检查同一个有问题的卡片
+    try {
+      await prisma.cardExchange.update({
+        where: { id: exchange.id },
+        data: {
+          lastCheckedAt: new Date(),
+        },
+      });
+    } catch (updateError) {
+      console.error(`更新检查时间失败:`, updateError);
+    }
+    throw error; // 重新抛出错误供上层处理
   }
 }
 
-// 检查所有活跃卡片的状态
-export async function checkAllActiveCards() {
-  try {
-    console.log('开始检查活跃卡片状态...');
+// 并发检查一批卡片（优化版 - 基于测试结果调整）
+async function checkCardBatch(exchanges: any[], batchSize: number = 50) {
+  const results = {
+    checked: 0,
+    claimed: 0,
+    errors: 0,
+    timeouts: 0
+  };
+  
+  // 分批并发处理，基于测试结果，并发数控制在50以内较为安全
+  for (let i = 0; i < exchanges.length; i += batchSize) {
+    const batch = exchanges.slice(i, i + batchSize);
     
-    // 获取所有活跃状态的卡片交换
-    const activeExchanges = await prisma.cardExchange.findMany({
-      where: {
-        status: 'active',
-      },
-      orderBy: {
-        lastCheckedAt: 'asc', // 优先检查最久未检查的
-      },
+    // 并发处理当前批次
+    const promises = batch.map(async (exchange) => {
+      try {
+        const wasClaimed = await checkSingleCardStatus(exchange);
+        results.checked++;
+        if (wasClaimed) {
+          results.claimed++;
+        }
+        return { success: true, claimed: wasClaimed };
+      } catch (error: any) {
+        console.error(`检查卡片 ${exchange.shareToken} 失败:`, error);
+        results.errors++;
+        
+        // 统计超时错误
+        if (error.message && error.message.includes('timeout')) {
+          results.timeouts++;
+        }
+        
+        return { success: false, error };
+      }
     });
     
-    console.log(`找到 ${activeExchanges.length} 个活跃的卡片交换`);
+    await Promise.all(promises);
     
-    if (activeExchanges.length === 0) {
+    // 批次间延迟，基于测试结果适当增加延迟
+    if (i + batchSize < exchanges.length) {
+      await new Promise(resolve => setTimeout(resolve, 200));
+    }
+  }
+  
+  return results;
+}
+
+// 检查所有活跃卡片的状态（优化版 - 基于测试结果调整）
+export async function checkAllActiveCards() {
+  try {
+    const startTime = Date.now();
+    console.log('开始检查活跃卡片状态...');
+    
+    // 基于测试结果优化参数：并发数50，页面大小500
+    const BATCH_SIZE = 50; // 并发批次大小（测试显示50并发较为安全）
+    const PAGE_SIZE = 500; // 每次查询的数量（减少单次查询量）
+    let offset = 0;
+    let totalChecked = 0;
+    let totalClaimed = 0;
+    let totalErrors = 0;
+    let totalTimeouts = 0;
+    
+    while (true) {
+      // 获取一页数据，优先处理最久未检查的
+      const activeExchanges = await prisma.cardExchange.findMany({
+        where: {
+          status: 'active',
+        },
+        orderBy: {
+          lastCheckedAt: 'asc', // 优先检查最久未检查的
+        },
+        skip: offset,
+        take: PAGE_SIZE,
+      });
+      
+      if (activeExchanges.length === 0) {
+        break; // 没有更多数据了
+      }
+      
+      console.log(`正在处理第 ${Math.floor(offset / PAGE_SIZE) + 1} 页，共 ${activeExchanges.length} 个卡片`);
+      
+      // 并发检查当前页的卡片
+      const results = await checkCardBatch(activeExchanges, BATCH_SIZE);
+      
+      totalChecked += results.checked;
+      totalClaimed += results.claimed;
+      totalErrors += results.errors;
+      totalTimeouts += results.timeouts || 0;
+      
+      console.log(`当前页完成: 检查 ${results.checked}，已领取 ${results.claimed}，错误 ${results.errors}，超时 ${results.timeouts || 0}`);
+      
+      // 如果超时率过高，增加延迟
+      const timeoutRate = results.timeouts / Math.max(results.checked + results.errors, 1);
+      if (timeoutRate > 0.1) { // 超时率超过10%
+        console.log(`检测到高超时率 ${(timeoutRate * 100).toFixed(1)}%，增加延迟...`);
+        await new Promise(resolve => setTimeout(resolve, 1000));
+      }
+      
+      offset += PAGE_SIZE;
+      
+      // 页间延迟，基于测试结果适当增加
+      await new Promise(resolve => setTimeout(resolve, 300));
+    }
+    
+    const duration = Date.now() - startTime;
+    console.log(`检查完成: 总共检查 ${totalChecked} 个卡片，发现 ${totalClaimed} 个已被领取，${totalErrors} 个错误，${totalTimeouts} 个超时，耗时 ${duration}ms`);
+    
+    return {
+      checked: totalChecked,
+      claimed: totalClaimed,
+      errors: totalErrors,
+      timeouts: totalTimeouts,
+      duration
+    };
+  } catch (error) {
+    console.error('检查卡片状态时发生错误:', error);
+    throw error;
+  }
+}
+
+// 启动定时检查任务（优化版）
+export function startCardStatusChecker() {
+  console.log('启动卡片状态检查器（优化版）...');
+  
+  let isChecking = false;
+  
+  // 检查函数包装器，防止重复执行
+  const safeCheck = async () => {
+    if (isChecking) {
+      console.log('上次检查仍在进行中，跳过本次检查');
       return;
     }
     
-    let checkedCount = 0;
-    let claimedCount = 0;
-    
-    // 逐个检查，避免并发过多请求
-    for (const exchange of activeExchanges) {
-      const wasClaimed = await checkSingleCardStatus(exchange);
-      checkedCount++;
-      
-      if (wasClaimed) {
-        claimedCount++;
-      }
-      
-      // 每次请求间隔500ms，避免请求过于频繁
-      await new Promise(resolve => setTimeout(resolve, 500));
+    isChecking = true;
+    try {
+      const startTime = Date.now();
+      const results = await checkAllActiveCards();
+      const duration = Math.round((Date.now() - startTime) / 1000);
+      console.log(`检查耗时: ${duration}秒，结果: ${JSON.stringify(results)}`);
+    } catch (error) {
+      console.error('定时检查失败:', error);
+    } finally {
+      isChecking = false;
     }
-    
-    console.log(`检查完成: 共检查 ${checkedCount} 个卡片，发现 ${claimedCount} 个已被领取`);
-  } catch (error) {
-    console.error('检查卡片状态时发生错误:', error);
-  }
-}
-
-// 启动定时检查任务
-export function startCardStatusChecker() {
-  console.log('启动卡片状态检查器...');
+  };
   
   // 立即执行一次检查
-  checkAllActiveCards();
+  safeCheck();
   
-  // 每10分钟检查一次
-  const interval = setInterval(() => {
-    checkAllActiveCards();
-  }, 10 * 60 * 1000); // 10分钟
+  // 每5分钟检查一次（提高频率以应对大量卡片）
+  const interval = setInterval(safeCheck, 5 * 60 * 1000); // 5分钟
   
   // 返回清理函数
   return () => {
@@ -133,11 +256,60 @@ export function startCardStatusChecker() {
 }
 
 // 清理过期的卡片交换（超过7天未检查的标记为过期）
+// 智能清理过期卡片（优化版）
 export async function cleanupExpiredCards() {
   try {
-    const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+    const startTime = Date.now();
+    console.log('开始清理过期卡片...');
     
-    const result = await prisma.cardExchange.updateMany({
+    // 多层次清理策略
+    const now = new Date();
+    const threeDaysAgo = new Date(now.getTime() - 3 * 24 * 60 * 60 * 1000);
+    const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+    const fourteenDaysAgo = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000);
+    
+    let totalCleaned = 0;
+    
+    // 1. 清理超过14天未检查的卡片（直接标记为过期）
+    const veryOldResult = await prisma.cardExchange.updateMany({
+      where: {
+        status: 'active',
+        lastCheckedAt: {
+          lt: fourteenDaysAgo,
+        },
+      },
+      data: {
+        status: 'expired',
+      },
+    });
+    
+    if (veryOldResult.count > 0) {
+      console.log(`清理了 ${veryOldResult.count} 个超过14天未检查的卡片`);
+      totalCleaned += veryOldResult.count;
+    }
+    
+    // 2. 对于7-14天未检查的卡片，进行最后一次检查
+    const oldCards = await prisma.cardExchange.findMany({
+      where: {
+        status: 'active',
+        lastCheckedAt: {
+          gte: fourteenDaysAgo,
+          lt: sevenDaysAgo,
+        },
+      },
+      take: 100, // 限制数量，避免一次处理太多
+    });
+    
+    if (oldCards.length > 0) {
+      console.log(`对 ${oldCards.length} 个7-14天未检查的卡片进行最后检查...`);
+      
+      // 使用较小的并发数进行最后检查
+      const finalCheckResults = await checkCardBatch(oldCards, 20);
+      console.log(`最后检查完成: 检查 ${finalCheckResults.checked}，已领取 ${finalCheckResults.claimed}，错误 ${finalCheckResults.errors}`);
+    }
+    
+    // 3. 清理超过7天未检查的剩余卡片
+    const regularResult = await prisma.cardExchange.updateMany({
       where: {
         status: 'active',
         lastCheckedAt: {
@@ -149,29 +321,51 @@ export async function cleanupExpiredCards() {
       },
     });
     
-    if (result.count > 0) {
-      console.log(`清理了 ${result.count} 个过期的卡片交换`);
+    if (regularResult.count > 0) {
+      console.log(`清理了 ${regularResult.count} 个超过7天未检查的卡片`);
+      totalCleaned += regularResult.count;
     }
+    
+    // 4. 统计当前活跃卡片数量
+    const activeCount = await prisma.cardExchange.count({
+      where: { status: 'active' }
+    });
+    
+    const duration = Date.now() - startTime;
+    console.log(`清理完成: 总共清理 ${totalCleaned} 个过期卡片，当前活跃卡片 ${activeCount} 个，耗时 ${duration}ms`);
+    
+    return {
+      cleaned: totalCleaned,
+      activeRemaining: activeCount,
+      duration
+    };
   } catch (error) {
     console.error('清理过期卡片时发生错误:', error);
+    throw error;
   }
 }
 
-// 启动清理任务
+// 启动智能清理任务（优化版）
 export function startCleanupTask() {
-  console.log('启动过期卡片清理任务...');
+  console.log('启动智能过期卡片清理任务...');
   
   // 立即执行一次清理
-  cleanupExpiredCards();
+  cleanupExpiredCards().catch(error => {
+    console.error('初始清理失败:', error);
+  });
   
-  // 每天清理一次
-  const interval = setInterval(() => {
-    cleanupExpiredCards();
-  }, 24 * 60 * 60 * 1000); // 24小时
+  // 每12小时清理一次（增加频率，减少单次处理量）
+  const interval = setInterval(async () => {
+    try {
+      await cleanupExpiredCards();
+    } catch (error) {
+      console.error('定时清理失败:', error);
+    }
+  }, 12 * 60 * 60 * 1000); // 12小时
   
   // 返回清理函数
   return () => {
-    console.log('停止过期卡片清理任务');
+    console.log('停止智能过期卡片清理任务');
     clearInterval(interval);
   };
 }
