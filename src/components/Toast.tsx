@@ -1,6 +1,13 @@
 'use client';
 
 import React, { useEffect } from 'react';
+import { 
+  CheckCircleIcon, 
+  XCircleIcon, 
+  ExclamationTriangleIcon, 
+  InformationCircleIcon,
+  XMarkIcon 
+} from '@heroicons/react/24/outline';
 
 interface ToastProps {
   message: string;
@@ -44,13 +51,13 @@ const Toast: React.FC<ToastProps> = ({
   const getIcon = () => {
     switch (type) {
       case 'success':
-        return '✅';
+        return <CheckCircleIcon className="h-5 w-5" />;
       case 'error':
-        return '❌';
+        return <XCircleIcon className="h-5 w-5" />;
       case 'warning':
-        return '⚠️';
+        return <ExclamationTriangleIcon className="h-5 w-5" />;
       default:
-        return 'ℹ️';
+        return <InformationCircleIcon className="h-5 w-5" />;
     }
   };
 
@@ -64,15 +71,15 @@ const Toast: React.FC<ToastProps> = ({
         ${isVisible ? 'translate-x-0 opacity-100' : 'translate-x-full opacity-0'}
       `}>
         <div className="flex items-center gap-3">
-          <span className="text-lg">{getIcon()}</span>
+          <div className="flex-shrink-0">{getIcon()}</div>
           <div className="flex-1">
             <p className="text-sm font-medium whitespace-pre-line">{message}</p>
           </div>
           <button
             onClick={onClose}
-            className="text-white/70 hover:text-white transition-colors ml-2"
+            className="text-white/70 hover:text-white transition-colors ml-2 flex-shrink-0"
           >
-            ✕
+            <XMarkIcon className="h-4 w-4" />
           </button>
         </div>
       </div>

@@ -225,16 +225,12 @@ export default function OverwatchMarketPage() {
     setExchanges(prev => prev.map(exchange => 
       exchange.id === id ? { ...exchange, status: newStatus as 'active' | 'claimed' | 'expired' } : exchange
     ));
-    
-    // 如果状态变为已领取，显示提示并重新加载数据
-    if (newStatus === 'claimed') {
-      showToast('卡片状态已更新为已领取', 'success');
-      // 延迟重新加载以确保数据同步
-      setTimeout(() => {
-        loadExchanges(pagination.page);
-      }, 1000);
-    }
-  }, [showToast, loadExchanges, pagination.page]);
+  }, []);
+
+  // 处理页面刷新
+  const handleRefreshPage = useCallback(() => {
+    loadExchanges(pagination.page);
+  }, [loadExchanges, pagination.page]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white">
@@ -265,36 +261,36 @@ export default function OverwatchMarketPage() {
         </div>
 
         {/* 页面标题 */}
-        <div className="text-center mb-8 lg:mb-12">
-          <div className="inline-flex items-center gap-3 mb-4">
-            <div className="w-12 h-12 rounded-xl flex items-center justify-center" style={{backgroundImage: 'url("https://ld5.res.netease.com/images/20241213/1734074185668_1f8923e771.svg")', backgroundSize: 'contain', backgroundRepeat: 'no-repeat', backgroundPosition: 'center'}}>
+        <div className="text-center mb-6">
+          <div className="inline-flex items-center gap-3 mb-3">
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{backgroundImage: 'url("https://ld5.res.netease.com/images/20241213/1734074185668_1f8923e771.svg")', backgroundSize: 'contain', backgroundRepeat: 'no-repeat', backgroundPosition: 'center'}}>
             </div>
-            <h1 className="text-3xl lg:text-5xl font-bold bg-gradient-to-r from-orange-400 to-orange-600 bg-clip-text text-transparent">
+            <h1 className="text-2xl lg:text-4xl font-bold bg-gradient-to-r from-orange-400 to-orange-600 bg-clip-text text-transparent">
               守望先锋集卡市场
             </h1>
           </div>
-          <p className="text-gray-300 text-base lg:text-lg max-w-2xl mx-auto">
+          <p className="text-gray-300 text-sm lg:text-base max-w-2xl mx-auto">
             分享、交换、收集你的守望先锋卡片
           </p>
         </div>
 
         {/* 添加卡片交换按钮 */}
-        <div className="text-center mb-8 lg:mb-12">
+        <div className="text-center mb-6">
           <button
             onClick={() => setIsModalOpen(true)}
-            className="inline-flex items-center gap-3 px-6 py-3 lg:px-8 lg:py-4 bg-gradient-to-r from-orange-600 to-orange-500 text-white rounded-xl hover:from-orange-500 hover:to-orange-400 transition-all duration-300 font-semibold text-base lg:text-lg shadow-lg hover:shadow-xl transform hover:scale-105 active:scale-95"
+            className="inline-flex items-center gap-2 px-4 py-2 lg:px-6 lg:py-3 bg-gradient-to-r from-orange-600 to-orange-500 text-white rounded-xl hover:from-orange-500 hover:to-orange-400 transition-all duration-300 font-semibold text-sm lg:text-base shadow-lg hover:shadow-xl transform hover:scale-105 active:scale-95"
           >
-            <SparklesIcon className="h-5 w-5 lg:h-6 lg:w-6" />
+            <SparklesIcon className="h-4 w-4 lg:h-5 lg:w-5" />
             <span>分享我的卡片</span>
-            <PlusIcon className="h-4 w-4 lg:h-5 lg:w-5" />
+            <PlusIcon className="h-3 w-3 lg:h-4 lg:w-4" />
           </button>
         </div>
 
         {/* 类型筛选器 */}
-        <div className="mb-8">
-          <div className="text-center mb-6">
-            <h2 className="text-xl lg:text-2xl font-bold text-white mb-2">选择交换类型</h2>
-            <p className="text-gray-400 text-sm lg:text-base">选择你感兴趣的卡片交换类型</p>
+        <div className="mb-5">
+          <div className="text-center mb-4">
+            <h2 className="text-lg lg:text-xl font-bold text-white mb-1">选择交换类型</h2>
+            <p className="text-gray-400 text-xs lg:text-sm">选择你感兴趣的卡片交换类型</p>
           </div>
           <ActionTypeFilter
             selectedActionType={selectedActionType}
@@ -303,32 +299,32 @@ export default function OverwatchMarketPage() {
         </div>
 
         {/* 控制区域 */}
-        <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700/50 rounded-2xl p-4 lg:p-6 mb-8">
-          <div className="flex flex-col lg:flex-row gap-4 lg:gap-6 items-center justify-between">
-            <div className="w-full lg:w-auto">
-              <CardFilter
-                selectedOfferCardId={selectedOfferCardId}
-                selectedWantCardId={selectedWantCardId}
-                onOfferCardChange={setSelectedOfferCardId}
-                onWantCardChange={setSelectedWantCardId}
-              />
-            </div>
+        <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700/50 rounded-xl p-3 lg:p-4 mb-6">
+          <div className="flex flex-col gap-3">
+            {/* 卡片筛选器 */}
+            <CardFilter
+              selectedOfferCardId={selectedOfferCardId}
+              selectedWantCardId={selectedWantCardId}
+              onOfferCardChange={setSelectedOfferCardId}
+              onWantCardChange={setSelectedWantCardId}
+            />
             
-            <div className="flex items-center gap-4 w-full lg:w-auto justify-between lg:justify-end">
-              <div className="flex items-center gap-4">
-                <div className="flex items-center gap-2 text-sm lg:text-base">
-                  <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-                  <span className="text-gray-300">活跃卡片</span>
-                  <span className="font-semibold text-white bg-gray-700 px-2 py-1 rounded-lg">
+            {/* 状态信息和刷新按钮 */}
+            <div className="flex items-center justify-between pt-2 border-t border-gray-700/30">
+              <div className="flex items-center gap-3 sm:gap-4">
+                <div className="flex items-center gap-1.5 text-xs sm:text-sm">
+                  <div className="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse"></div>
+                  <span className="text-gray-300">活跃</span>
+                  <span className="font-semibold text-white bg-gray-700/70 px-1.5 py-0.5 rounded text-xs">
                     {pagination.total}
                   </span>
                 </div>
                 
-                {/* 倒计时显示 */}
-                <div className="flex items-center gap-2 text-sm lg:text-base">
-                  <div className="w-2 h-2 bg-orange-400 rounded-full animate-pulse"></div>
-                  <span className="text-gray-300">下次检查活跃状态</span>
-                  <span className="font-semibold text-orange-300 bg-orange-500/20 px-2 py-1 rounded-lg font-mono">
+                <div className="flex items-center gap-1.5 text-xs sm:text-sm">
+                  <div className="w-1.5 h-1.5 bg-orange-400 rounded-full animate-pulse"></div>
+                  <span className="text-gray-300 hidden sm:inline">下次检查</span>
+                  <span className="text-gray-300 sm:hidden">检查</span>
+                  <span className="font-semibold text-orange-300 bg-orange-500/20 px-1.5 py-0.5 rounded font-mono text-xs">
                     {formatCountdown(nextCleanupTime)}
                   </span>
                 </div>
@@ -337,16 +333,16 @@ export default function OverwatchMarketPage() {
               <button
                 onClick={() => loadExchanges(1)}
                 disabled={loading}
-                className="flex items-center gap-2 px-4 py-2 bg-gray-700 text-white rounded-xl hover:bg-gray-600 transition-all duration-200 disabled:opacity-50 font-medium"
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-700/70 text-white rounded-lg hover:bg-gray-600/70 transition-all duration-200 disabled:opacity-50 text-sm"
               >
                 {loading ? (
                   <>
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                    <span className="hidden sm:inline">刷新中...</span>
+                    <div className="animate-spin rounded-full h-3 w-3 border-b border-white"></div>
+                    <span className="hidden sm:inline">刷新中</span>
                   </>
                 ) : (
                   <>
-                    <ArrowPathIcon className="h-4 w-4" />
+                    <ArrowPathIcon className="h-3 w-3" />
                     <span className="hidden sm:inline">刷新</span>
                   </>
                 )}
@@ -389,6 +385,8 @@ export default function OverwatchMarketPage() {
                     exchange={exchange}
                     onCopyUrl={copyUrl}
                     onStatusUpdate={handleStatusUpdate}
+                    showToast={showToast}
+                    onRefreshPage={handleRefreshPage}
                   />
                 ))}
               </div>

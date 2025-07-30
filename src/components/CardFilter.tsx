@@ -28,8 +28,7 @@ const ALL_CARD_IDS = [
 // 卡片ID到图片路径的映射函数
 const getCardImagePath = (cardId: number): string => {
   if (cardId >= 1 && cardId <= 9) {
-    const cnCardNum = cardId === 1 ? 2 : cardId;
-    return `/card/cn-${cnCardNum}-c.png`;
+    return `/card/cn-${cardId}-c.png`;
   } else if (cardId >= 10 && cardId <= 15) {
     const naCardNum = cardId - 9;
     return `/card/na-${naCardNum}-c.png`;
@@ -218,7 +217,7 @@ function SimpleCardSelector({ title, selectedCardId, onCardChange, placeholder, 
       <button
         ref={buttonRef}
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full p-4 bg-gray-700/30 border border-gray-600/50 hover:border-gray-500/50 hover:bg-gray-600/30 rounded-lg transition-all flex items-center justify-between group shadow-lg hover:shadow-xl backdrop-blur-sm"
+        className="w-full p-3 bg-gray-700/30 border border-gray-600/50 hover:border-gray-500/50 hover:bg-gray-600/30 rounded-lg transition-all flex items-center justify-between group shadow-md hover:shadow-lg backdrop-blur-sm"
       >
         <div className="flex items-center gap-3">
           <div className={`w-6 h-6 rounded-md flex items-center justify-center text-xs font-bold text-white ${
@@ -299,13 +298,13 @@ function SimpleCardSelector({ title, selectedCardId, onCardChange, placeholder, 
 
 export default function CardFilter({ selectedOfferCardId, selectedWantCardId, onOfferCardChange, onWantCardChange }: CardFilterProps) {
   return (
-    <div className="bg-gray-800/50 border border-gray-700/50 rounded-xl p-6 shadow-lg backdrop-blur-sm">
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-r from-orange-600 to-orange-500 flex items-center justify-center">
-            <FunnelIcon className="h-4 w-4 text-white" />
+    <div className="space-y-3">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <div className="w-6 h-6 rounded-lg bg-gradient-to-r from-orange-600 to-orange-500 flex items-center justify-center">
+            <FunnelIcon className="h-3 w-3 text-white" />
           </div>
-          <h3 className="text-xl font-bold text-white">卡片筛选器</h3>
+          <h3 className="text-lg font-bold text-white">卡片筛选</h3>
         </div>
         
         {(selectedOfferCardId || selectedWantCardId) && (
@@ -314,36 +313,36 @@ export default function CardFilter({ selectedOfferCardId, selectedWantCardId, on
               onOfferCardChange(null);
               onWantCardChange(null);
             }}
-            className="px-4 py-2 bg-gray-700/50 hover:bg-gray-600/50 border border-gray-600/50 hover:border-gray-500/50 rounded-lg transition-all flex items-center gap-2 text-sm text-gray-300 hover:text-white"
+            className="px-2 py-1 bg-gray-700/50 hover:bg-gray-600/50 border border-gray-600/50 hover:border-gray-500/50 rounded transition-all flex items-center gap-1 text-xs text-gray-300 hover:text-white"
           >
-            <XMarkIcon className="h-4 w-4" />
-            清除筛选
+            <XMarkIcon className="h-3 w-3" />
+            <span className="hidden sm:inline">清除</span>
           </button>
         )}
       </div>
       
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
         <SimpleCardSelector
-          title="提供/送出的卡片"
+          title="需要的卡片"
           selectedCardId={selectedOfferCardId}
           onCardChange={onOfferCardChange}
-          placeholder="选择要提供/送出的卡片"
-          icon="OFFER"
+          placeholder="选择需要的卡片"
+          icon="WANT"
         />
         
         <SimpleCardSelector
-          title="需要的卡片"
+          title="提供/送出的卡片"
           selectedCardId={selectedWantCardId}
           onCardChange={onWantCardChange}
-          placeholder="选择需要的卡片"
-          icon="WANT"
+          placeholder="选择要提供/送出的卡片"
+          icon="OFFER"
         />
       </div>
       
       {(selectedOfferCardId || selectedWantCardId) && (
-        <div className="mt-6 pt-4 border-t border-gray-700/50">
-          <div className="flex items-center justify-center gap-2 text-sm text-orange-400">
-            <div className="w-2 h-2 bg-orange-500 rounded-full animate-pulse"></div>
+        <div className="pt-2 border-t border-gray-700/30">
+          <div className="flex items-center justify-center gap-1.5 text-xs text-orange-400">
+            <div className="w-1.5 h-1.5 bg-orange-500 rounded-full animate-pulse"></div>
             <span>筛选已激活</span>
           </div>
         </div>

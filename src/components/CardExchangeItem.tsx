@@ -33,6 +33,8 @@ interface CardExchangeItemProps {
   exchange: CardExchange;
   onCopyUrl: (url: string) => void;
   onStatusUpdate?: (id: string, newStatus: string) => void;
+  showToast?: (message: string, type: 'success' | 'error' | 'warning' | 'info') => void;
+  onRefreshPage?: () => void;
 }
 
 const ACTION_TYPE_LABELS = {
@@ -75,8 +77,7 @@ const getCardRegionAndNumber = (cardId: number): { region: keyof typeof REGION_M
 // 卡片ID到图片路径的映射函数
 const getCardImagePath = (cardId: number): string => {
   if (cardId >= 1 && cardId <= 9) {
-    const cnCardNum = cardId === 1 ? 2 : cardId;
-    return `/card/cn-${cnCardNum}-c.png`;
+    return `/card/cn-${cardId}-c.png`;
   } else if (cardId >= 10 && cardId <= 15) {
     const naCardNum = cardId - 9;
     return `/card/na-${naCardNum}-c.png`;
@@ -109,7 +110,7 @@ const formatDate = (dateString: string): string => {
   }
 };
 
-export default function CardExchangeItem({ exchange, onCopyUrl, onStatusUpdate }: CardExchangeItemProps) {
+export default function CardExchangeItem({ exchange, onCopyUrl, onStatusUpdate, showToast, onRefreshPage }: CardExchangeItemProps) {
   const [isChecking, setIsChecking] = useState(false);
   
   // 主动检查卡片状态
@@ -117,6 +118,8 @@ export default function CardExchangeItem({ exchange, onCopyUrl, onStatusUpdate }
     if (isChecking) return;
     
     setIsChecking(true);
+    showToast?.('正在检查卡片状态...', 'info');
+    
     try {
       const response = await fetch(`/api/card-exchanges/${exchange.id}/check`, {
         method: 'POST',
@@ -126,19 +129,36 @@ export default function CardExchangeItem({ exchange, onCopyUrl, onStatusUpdate }
       });
       
       if (!response.ok) {
-        throw new Error('检查失败');
+        const errorData = await response.json();
+        throw new Error(errorData.error || '检查失败');
       }
       
       const result = await response.json();
       
-      if (result.statusChanged && onStatusUpdate) {
-        onStatusUpdate(exchange.id, result.status);
+      if (result.statusChanged) {
+        if (result.status === 'claimed') {
+          showToast?.('卡片已被领取，正在刷新页面...', 'warning');
+          // 更新本地状态
+          if (onStatusUpdate) {
+            onStatusUpdate(exchange.id, result.status);
+          }
+          // 延迟刷新页面以确保用户看到提示
+          setTimeout(() => {
+            onRefreshPage?.();
+          }, 2000);
+        } else {
+          showToast?.(result.message, 'success');
+          if (onStatusUpdate) {
+            onStatusUpdate(exchange.id, result.status);
+          }
+        }
+      } else {
+        showToast?.(result.message || '卡片仍然可用', 'success');
       }
-      
-      // 可以添加toast提示
-      console.log(result.message);
     } catch (error) {
       console.error('检查卡片状态失败:', error);
+      const errorMessage = error instanceof Error ? error.message : '检查卡片状态失败，请重试';
+      showToast?.(errorMessage, 'error');
     } finally {
       setIsChecking(false);
     }
