@@ -14,6 +14,7 @@ import {
   ExclamationTriangleIcon
 } from '@heroicons/react/24/outline';
 import { useState } from 'react';
+import Image from 'next/image';
 
 interface CardExchange {
   id: string;
@@ -205,14 +206,14 @@ export default function CardExchangeItem({ exchange, onCopyUrl, onStatusUpdate }
               {/* 发起者卡片 */}
               <div className="flex flex-col items-center space-y-2 sm:space-y-3">
                 <div className="relative group-hover:scale-105 sm:group-hover:scale-110 transition-transform duration-300">
-                  <img
+                  <Image
                     src={getCardImagePath(exchange.actionInitiatorCardId)}
                     alt={`卡片 ${exchange.actionInitiatorCardId}`}
+                    width={80}
+                    height={80}
                     className="w-16 h-16 sm:w-18 sm:h-18 lg:w-20 lg:h-20 rounded-lg sm:rounded-xl border-2 border-orange-500/60 object-cover shadow-xl ring-2 ring-orange-400/20"
-                    onError={(e) => {
-                      const target = e.target as HTMLImageElement;
-                      target.style.display = 'none';
-                    }}
+                    priority={false}
+                    unoptimized={false}
                   />
                   <div className="absolute -bottom-1 -right-1 bg-gradient-to-r from-orange-600 to-orange-700 text-white text-xs px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-md sm:rounded-lg font-mono shadow-lg border border-orange-400/50">
                     #{exchange.actionInitiatorCardId}
@@ -233,14 +234,14 @@ export default function CardExchangeItem({ exchange, onCopyUrl, onStatusUpdate }
               {/* 接受者卡片 */}
               <div className="flex flex-col items-center space-y-2 sm:space-y-3">
                 <div className="relative group-hover:scale-105 sm:group-hover:scale-110 transition-transform duration-300">
-                  <img
+                  <Image
                     src={getCardImagePath(exchange.actionAcceptCardId)}
                     alt={`卡片 ${exchange.actionAcceptCardId}`}
+                    width={80}
+                    height={80}
                     className="w-16 h-16 sm:w-18 sm:h-18 lg:w-20 lg:h-20 rounded-lg sm:rounded-xl border-2 border-blue-500/60 object-cover shadow-xl ring-2 ring-blue-400/20"
-                    onError={(e) => {
-                      const target = e.target as HTMLImageElement;
-                      target.style.display = 'none';
-                    }}
+                    priority={false}
+                    unoptimized={false}
                   />
                   <div className="absolute -bottom-1 -right-1 bg-gradient-to-r from-blue-600 to-blue-700 text-white text-xs px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-md sm:rounded-lg font-mono shadow-lg border border-blue-400/50">
                     #{exchange.actionAcceptCardId}
@@ -277,14 +278,14 @@ export default function CardExchangeItem({ exchange, onCopyUrl, onStatusUpdate }
             <div className="flex justify-center">
               <div className="flex flex-col items-center space-y-2 sm:space-y-3">
                 <div className="relative group-hover:scale-105 sm:group-hover:scale-110 transition-transform duration-300">
-                  <img
+                  <Image
                     src={getCardImagePath(exchange.actionInitiatorCardId)}
                     alt={`卡片 ${exchange.actionInitiatorCardId}`}
+                    width={112}
+                    height={112}
                     className="w-20 h-20 sm:w-24 sm:h-24 lg:w-28 lg:h-28 rounded-lg sm:rounded-xl border-2 border-orange-500/60 object-cover shadow-xl ring-2 ring-orange-400/20"
-                    onError={(e) => {
-                      const target = e.target as HTMLImageElement;
-                      target.style.display = 'none';
-                    }}
+                    priority={false}
+                    unoptimized={false}
                   />
                   <div className="absolute -bottom-1 -right-1 bg-gradient-to-r from-orange-600 to-orange-700 text-white text-xs px-2 py-1 rounded-md sm:rounded-lg font-mono shadow-lg border border-orange-400/50">
                     #{exchange.actionInitiatorCardId}

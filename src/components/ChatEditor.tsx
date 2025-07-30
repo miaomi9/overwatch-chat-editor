@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import Image from 'next/image';
 import TextureSelector from './TextureSelector';
 import TextInput from './TextInput';
 import TemplateSelector from './TemplateSelector';
@@ -310,7 +311,7 @@ const ChatEditor: React.FC = () => {
         <div className="flex justify-between items-center mb-6">
           <div className="flex items-center gap-6">
             <div className="flex items-center gap-3">
-              <img src="https://ld5.res.netease.com/images/20241213/1734074185668_1f8923e771.svg" alt="Overwatch" className="w-10 h-10" />
+              <Image src="https://ld5.res.netease.com/images/20241213/1734074185668_1f8923e771.svg" alt="Overwatch" width={40} height={40} className="w-10 h-10" unoptimized />
               <h1 className="text-4xl font-bold text-white bg-gradient-to-r from-orange-400 to-orange-600 bg-clip-text text-transparent">守望先锋聊天编辑器</h1>
             </div>
             
@@ -323,7 +324,7 @@ const ChatEditor: React.FC = () => {
                  rel="noopener noreferrer"
                  className="flex items-center gap-2 px-3 py-2 bg-gradient-to-r from-blue-600/20 to-blue-700/20 border border-blue-500/30 rounded-lg hover:from-blue-600/30 hover:to-blue-700/30 hover:border-blue-400/50 transition-all duration-200 group"
                >
-                 <img src="https://ts3.tc.mm.bing.net/th/id/ODF.HcIfqnk4n-lbffGcaqDC2w?w=32&h=32&qlt=90&pcl=fffffa&o=6&cb=thwsc4&pid=1.2" alt="Bilibili" className="w-5 h-5" />
+                 <Image src="https://ts3.tc.mm.bing.net/th/id/ODF.HcIfqnk4n-lbffGcaqDC2w?w=32&h=32&qlt=90&pcl=fffffa&o=6&cb=thwsc4&pid=1.2" alt="Bilibili" width={20} height={20} className="w-5 h-5" unoptimized />
                  <span className="text-white text-sm font-medium">视频教程</span>
                 <div className="text-blue-400 opacity-0 group-hover:opacity-100 transition-opacity">
                   <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -355,7 +356,7 @@ const ChatEditor: React.FC = () => {
                  rel="noopener noreferrer"
                  className="flex items-center gap-2 px-3 py-2 bg-gradient-to-r from-green-600/20 to-green-700/20 border border-green-500/30 rounded-lg hover:from-green-600/30 hover:to-green-700/30 hover:border-green-400/50 transition-all duration-200 group"
                >
-                 <img src="https://ts3.tc.mm.bing.net/th/id/ODF.bYAvaN8MCaSZfP0o7q_Z_w?w=32&h=32&qlt=90&pcl=fffffc&o=6&cb=thwsc4&pid=1.2" alt="GitHub" className="w-5 h-5" />
+                 <Image src="https://ts3.tc.mm.bing.net/th/id/ODF.bYAvaN8MCaSZfP0o7q_Z_w?w=32&h=32&qlt=90&pcl=fffffc&o=6&cb=thwsc4&pid=1.2" alt="GitHub" width={20} height={20} className="w-5 h-5" unoptimized />
                  <span className="text-white text-sm font-medium">GitHub</span>
                 <div className="text-green-400 opacity-0 group-hover:opacity-100 transition-opacity">
                   <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
