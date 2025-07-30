@@ -310,44 +310,23 @@ const ChatEditor: React.FC = () => {
 
 
         <div className="flex justify-between items-center mb-6">
-          <div className="flex items-center gap-6">
+          <div className="flex items-center gap-4">
             <div className="flex items-center gap-3">
               <Image src="https://ld5.res.netease.com/images/20241213/1734074185668_1f8923e771.svg" alt="Overwatch" width={40} height={40} className="w-10 h-10" unoptimized />
-              <h1 className="text-4xl font-bold text-white bg-gradient-to-r from-orange-400 to-orange-600 bg-clip-text text-transparent">守望先锋聊天编辑器</h1>
+              <h1 className="text-3xl font-bold text-white bg-gradient-to-r from-orange-400 to-orange-600 bg-clip-text text-transparent">守望先锋聊天编辑器</h1>
             </div>
             
-            {/* 使用教程和项目信息 - 横向布局 */}
-            <div className="flex items-center gap-3">
+            {/* 导航链接 */}
+            <div className="flex items-center gap-2">
               {/* 视频教程 */}
                <a 
                  href="https://www.bilibili.com/video/BV1ncbRzGEJW/?share_source=copy_web&vd_source=46be8e2fa7c30d3bdf853b9c4adcd69b"
                  target="_blank"
                  rel="noopener noreferrer"
-                 className="flex items-center gap-2 px-3 py-2 bg-gradient-to-r from-blue-600/20 to-blue-700/20 border border-blue-500/30 rounded-lg hover:from-blue-600/30 hover:to-blue-700/30 hover:border-blue-400/50 transition-all duration-200 group"
+                 className="flex items-center gap-1.5 px-3 py-2 bg-blue-500/10 border border-blue-500/20 rounded-lg hover:bg-blue-500/20 hover:border-blue-400/30 transition-all duration-200 group"
                >
-                 <Image src="https://ts3.tc.mm.bing.net/th/id/ODF.HcIfqnk4n-lbffGcaqDC2w?w=32&h=32&qlt=90&pcl=fffffa&o=6&cb=thwsc4&pid=1.2" alt="Bilibili" width={20} height={20} className="w-5 h-5" unoptimized />
-                 <span className="text-white text-sm font-medium">视频教程</span>
-                <div className="text-blue-400 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                  </svg>
-                </div>
-              </a>
-              
-              {/* 卡片交换市场 */}
-               <a 
-                 href="/overwatch-market"
-                 className="flex items-center gap-2 px-3 py-2 bg-gradient-to-r from-purple-600/20 to-purple-700/20 border border-purple-500/30 rounded-lg hover:from-purple-600/30 hover:to-purple-700/30 hover:border-purple-400/50 transition-all duration-200 group"
-               >
-                 <svg className="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-                 </svg>
-                 <span className="text-white text-sm font-medium">卡片交换</span>
-                <div className="text-purple-400 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                  </svg>
-                </div>
+                 <Image src="https://ts3.tc.mm.bing.net/th/id/ODF.HcIfqnk4n-lbffGcaqDC2w?w=32&h=32&qlt=90&pcl=fffffa&o=6&cb=thwsc4&pid=1.2" alt="Bilibili" width={16} height={16} className="w-4 h-4" unoptimized />
+                 <span className="text-white text-sm font-medium">教程</span>
               </a>
               
               {/* 开源项目 */}
@@ -355,39 +334,61 @@ const ChatEditor: React.FC = () => {
                  href="https://github.com/MapleOAO/overwatch-chat-editor"
                  target="_blank"
                  rel="noopener noreferrer"
-                 className="flex items-center gap-2 px-3 py-2 bg-gradient-to-r from-green-600/20 to-green-700/20 border border-green-500/30 rounded-lg hover:from-green-600/30 hover:to-green-700/30 hover:border-green-400/50 transition-all duration-200 group"
+                 className="flex items-center gap-1.5 px-3 py-2 bg-green-500/10 border border-green-500/20 rounded-lg hover:bg-green-500/20 hover:border-green-400/30 transition-all duration-200 group"
                >
-                 <Image src="https://ts3.tc.mm.bing.net/th/id/ODF.bYAvaN8MCaSZfP0o7q_Z_w?w=32&h=32&qlt=90&pcl=fffffc&o=6&cb=thwsc4&pid=1.2" alt="GitHub" width={20} height={20} className="w-5 h-5" unoptimized />
-                 <span className="text-white text-sm font-medium">GitHub</span>
-                <div className="text-green-400 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                  </svg>
-                </div>
+                 <Image src="https://ts3.tc.mm.bing.net/th/id/ODF.bYAvaN8MCaSZfP0o7q_Z_w?w=32&h=32&qlt=90&pcl=fffffc&o=6&cb=thwsc4&pid=1.2" alt="GitHub" width={16} height={16} className="w-4 h-4" unoptimized />
+                 <span className="text-white text-sm font-medium">源码</span>
               </a>
             </div>
           </div>
           
+          {/* 功能按钮 */}
           <div className="flex items-center gap-3">
-            <AppreciationButton className="text-sm" />
-            <button
-              onClick={() => window.open('/community-templates', '_blank')}
-              className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-orange-500/20 to-orange-600/20 border border-orange-500/30 rounded-lg hover:from-orange-500/30 hover:to-orange-600/30 hover:border-orange-400/50 transition-all duration-200 group"
-            >
-              <span className="text-lg">🎨</span>
-              <span className="text-white text-sm font-medium">社区模板</span>
-              <svg className="w-4 h-4 text-orange-400 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-              </svg>
-            </button>
-            <button
-              onClick={handleSaveToLocal}
-              className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 text-sm transition-colors"
-              disabled={elements.length === 0}
-              title={elements.length === 0 ? '请先添加一些元素' : '保存到本地缓存（更新后可能丢失）'}
-            >
-              保存为模板
-            </button>
+            {/* 主要功能按钮 */}
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => window.open('/overwatch-market', '_blank')}
+                className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-500/20 to-purple-600/20 border border-purple-500/30 rounded-lg hover:from-purple-500/30 hover:to-purple-600/30 hover:border-purple-400/50 transition-all duration-200 group"
+              >
+                <svg className="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                </svg>
+                <span className="text-white text-sm font-medium">卡片交换</span>
+                <div className="text-purple-400 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                  </svg>
+                </div>
+              </button>
+              <button
+                onClick={() => window.open('/community-templates', '_blank')}
+                className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-orange-500/20 to-orange-600/20 border border-orange-500/30 rounded-lg hover:from-orange-500/30 hover:to-orange-600/30 hover:border-orange-400/50 transition-all duration-200 group"
+              >
+                <span className="text-lg">🎨</span>
+                <span className="text-white text-sm font-medium">社区模板</span>
+                <div className="text-orange-400 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                  </svg>
+                </div>
+              </button>
+            </div>
+            
+            {/* 次要功能按钮 */}
+            <div className="flex items-center gap-2 border-l border-gray-600/30 pl-3">
+              <AppreciationButton className="px-3 py-2 text-sm" />
+              <button
+                onClick={handleSaveToLocal}
+                className="flex items-center gap-1.5 px-3 py-2 bg-blue-500/10 border border-blue-500/20 rounded-lg hover:bg-blue-500/20 hover:border-blue-400/30 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={elements.length === 0}
+                title={elements.length === 0 ? '请先添加一些元素' : '保存到本地缓存（更新后可能丢失）'}
+              >
+                <svg className="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
+                </svg>
+                <span className="text-white text-sm font-medium">保存模板</span>
+              </button>
+            </div>
           </div>
         </div>
         

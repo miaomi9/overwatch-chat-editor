@@ -3,7 +3,7 @@ import { prisma } from '@/lib/db';
 import { createRateLimit } from '@/utils/rateLimiter';
 import { isSuspiciousUserAgent } from '@/utils/validation';
 
-// 创建速率限制器 - 每分钟最多3次检查
+// 创建速率限制器 - 每分钟最多5次检查
 const checkRateLimit = createRateLimit({
   max: 5,
   windowMs: 60 * 1000, // 1分钟

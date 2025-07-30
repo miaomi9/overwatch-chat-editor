@@ -158,7 +158,16 @@ export default function CardExchangeItem({ exchange, onCopyUrl, onStatusUpdate, 
     } catch (error) {
       console.error('检查卡片状态失败:', error);
       const errorMessage = error instanceof Error ? error.message : '检查卡片状态失败，请重试';
-      showToast?.(errorMessage, 'error');
+      
+      // 如果卡片已不是活跃状态，刷新页面
+      if (errorMessage.includes('卡片已不是活跃状态')) {
+        showToast?.('卡片状态已变更，正在刷新页面...', 'warning');
+        setTimeout(() => {
+          onRefreshPage?.();
+        }, 2000);
+      } else {
+        showToast?.(errorMessage, 'error');
+      }
     } finally {
       setIsChecking(false);
     }
