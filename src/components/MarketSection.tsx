@@ -83,7 +83,7 @@ export default function MarketSection({ title, icon, exchanges, onCopyUrl, bgGra
 // 预定义的市场分类
 export const MARKET_SECTIONS = {
   ask: {
-    title: '请求卡片',
+    title: '我想要卡片',
     icon: <HandRaisedIcon className="h-6 w-6 text-blue-400" />,
     bgGradient: 'from-blue-900/30 to-blue-800/20',
     borderColor: 'border-blue-500/30',
@@ -95,7 +95,7 @@ export const MARKET_SECTIONS = {
     borderColor: 'border-purple-500/30',
   },
   give: {
-    title: '赠送卡片',
+    title: '我要送出卡片',
     icon: <GiftIcon className="h-6 w-6 text-green-400" />,
     bgGradient: 'from-green-900/30 to-green-800/20',
     borderColor: 'border-green-500/30',

@@ -131,7 +131,7 @@ export default function AddExchangeModal({ isOpen, onClose, onSubmit, isSubmitti
                   <ExclamationTriangleIcon className="h-4 w-4 sm:h-5 sm:w-5 text-amber-400 mt-0.5 flex-shrink-0" />
                   <div className="text-xs sm:text-sm min-w-0">
                     <p className="text-amber-300 font-medium mb-1">💡 建议优先使用交换模式</p>
-                    <p className="text-amber-200 leading-relaxed">推荐选择"交换卡片"而非"赠送卡片"，避免卡片流入闲鱼等二手平台被恶意倒卖，保护社区交换环境。</p>
+                    <p className="text-amber-200 leading-relaxed">推荐选择"交换卡片"而非"我要送出卡片"，避免卡片流入闲鱼等二手平台被恶意倒卖，保护社区交换环境。</p>
                   </div>
                 </div>
               </div>

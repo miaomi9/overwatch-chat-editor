@@ -323,18 +323,18 @@ export default function CardFilter({ selectedOfferCardId, selectedWantCardId, on
       
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
         <SimpleCardSelector
-          title="需要的卡片"
+          title="我想要的卡片"
           selectedCardId={selectedOfferCardId}
           onCardChange={onOfferCardChange}
-          placeholder="选择需要的卡片"
+          placeholder="选择我想要的卡片"
           icon="WANT"
         />
         
         <SimpleCardSelector
-          title="提供/送出的卡片"
+          title="我可以给出的卡片"
           selectedCardId={selectedWantCardId}
           onCardChange={onWantCardChange}
-          placeholder="选择要提供/送出的卡片"
+          placeholder="选择我可以给出的卡片"
           icon="OFFER"
         />
       </div>

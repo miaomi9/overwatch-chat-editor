@@ -38,9 +38,9 @@ interface CardExchangeItemProps {
 }
 
 const ACTION_TYPE_LABELS = {
-  ask: '请求卡片',
+  ask: '我想要卡片',
   exchange: '交换卡片',
-  give: '赠送卡片',
+  give: '我要送出卡片',
 };
 
 const STATUS_LABELS = {
@@ -294,12 +294,12 @@ export default function CardExchangeItem({ exchange, onCopyUrl, onStatusUpdate, 
                 {exchange.actionType === 'ask' ? (
                   <>
                     <HandRaisedIcon className="h-5 w-5 text-blue-400" />
-                    <span>请求卡片</span>
+                    <span>我想要卡片</span>
                   </>
                 ) : (
                   <>
                     <GiftIcon className="h-5 w-5 text-green-400" />
-                    <span>赠送卡片</span>
+                    <span>我要送出卡片</span>
                   </>
                 )}
               </span>

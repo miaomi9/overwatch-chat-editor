@@ -3,9 +3,9 @@ import { prisma } from '@/lib/db';
 import { createRateLimit } from '@/utils/rateLimiter';
 import { isSuspiciousUserAgent } from '@/utils/validation';
 
-// 创建速率限制器 - 每分钟最多5次检查
+// 创建速率限制器 - 每分钟最多10次检查
 const checkRateLimit = createRateLimit({
-  max: 5,
+  max: 10,
   windowMs: 60 * 1000, // 1分钟
   message: '检查过于频繁，请稍后再试。',
 });

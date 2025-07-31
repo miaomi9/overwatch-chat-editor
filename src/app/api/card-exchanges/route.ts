@@ -69,11 +69,11 @@ async function fetchCardInfo(shareToken: string) {
 
 // GET - 获取卡片交换列表
 export async function GET(request: NextRequest) {
-  // 速率限制检查 - 每分钟最多30次
+  // 速率限制检查 - 每分钟最多40次
   const getRateLimit = createRateLimit({
-    max: 30,
+    max: 40,
     windowMs: 60 * 1000,
-    message: '查询过于频繁，请稍后再试。',
+    message: '查询过于频繁，请稍后再试。（不是炸了哦，请稍等一分钟或切换网络！）',
   });
   const rateLimitResult = await getRateLimit(request);
   if (rateLimitResult) {
