@@ -251,7 +251,7 @@ export default function CardExchangeItem({ exchange, onCopyUrl, onStatusUpdate, 
                 <div className="text-center">
                   <span className="text-xs text-gray-400 block mb-1 flex items-center justify-center gap-1">
                     <BriefcaseIcon className="h-3 w-3" />
-                    <span className="hidden sm:inline">提供</span>
+                    <span className="hidden sm:inline">(发起者)提供</span>
                   </span>
                   <span className="text-xs text-orange-300 font-semibold bg-orange-500/10 px-2 py-1 rounded-lg max-w-20 sm:max-w-none truncate">{initiatorCardInfo.displayName}</span>
                 </div>
@@ -279,7 +279,7 @@ export default function CardExchangeItem({ exchange, onCopyUrl, onStatusUpdate, 
                 <div className="text-center">
                   <span className="text-xs text-gray-400 block mb-1 flex items-center justify-center gap-1">
                     <CursorArrowRaysIcon className="h-3 w-3" />
-                    <span className="hidden sm:inline">需要</span>
+                    <span className="hidden sm:inline">(发起者)需要</span>
                   </span>
                   <span className="text-xs text-blue-300 font-semibold bg-blue-500/10 px-2 py-1 rounded-lg max-w-20 sm:max-w-none truncate">{acceptCardInfo?.displayName}</span>
                 </div>
