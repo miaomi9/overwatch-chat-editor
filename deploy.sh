@@ -9,7 +9,7 @@ set -e
 
 # 默认端口、数据库URL和Redis URL
 DEFAULT_PORT=3000
-DEFAULT_DATABASE_URL="mysql://root:123456@localhost:3306/overwatch"
+DEFAULT_DATABASE_URL="mysql://root:123456@host.docker.internal:3306/overwatch"
 DEFAULT_REDIS_URL="redis://:password@localhost:6379"
 
 # 获取参数
@@ -93,7 +93,7 @@ fi
 echo "🚀 启动容器..."
 docker run -d \
     --name "$CONTAINER_NAME" \
-    --network="host" \
+    -p "$PORT:3000" \
     -e "DATABASE_URL=$DATABASE_URL" \
     -e "REDIS_URL=$REDIS_URL" \
     "$IMAGE_NAME"
