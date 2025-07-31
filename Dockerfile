@@ -38,33 +38,30 @@ RUN npm run build
 EXPOSE 3000
 
 # 创建启动脚本
-RUN cat > /app/start.sh << 'EOF'
-#!/bin/sh
-
-# 等待数据库连接
-echo "等待数据库连接..."
-until npx prisma db push --accept-data-loss 2>/dev/null; do
-  echo "数据库连接失败，5秒后重试..."
-  sleep 5
-done
-echo "数据库连接成功"
-
-# 检查Redis连接（如果配置了Redis URL）
-if [ -n "$REDIS_URL" ] && [ "$REDIS_URL" != "" ]; then
-  echo "检查Redis连接..."
-  # 使用node检查Redis连接
-  node -e "const Redis = require('ioredis'); const redis = new Redis(process.env.REDIS_URL); redis.ping().then(() => { console.log('Redis连接成功'); redis.quit(); process.exit(0); }).catch((err) => { console.error('Redis连接失败:', err.message); process.exit(1); });" || {
-    echo "Redis连接失败，但继续启动应用（Redis为可选服务）"
-  }
-else
-  echo "未配置Redis URL，跳过Redis连接检查"
-fi
-
-echo "启动应用..."
-exec npm start
-EOF
-
-RUN chmod +x /app/start.sh
+RUN echo '#!/bin/sh' > /app/start.sh && \
+    echo '' >> /app/start.sh && \
+    echo '# 等待数据库连接' >> /app/start.sh && \
+    echo 'echo "等待数据库连接..."' >> /app/start.sh && \
+    echo 'until npx prisma db push --accept-data-loss 2>/dev/null; do' >> /app/start.sh && \
+    echo '  echo "数据库连接失败，5秒后重试..."' >> /app/start.sh && \
+    echo '  sleep 5' >> /app/start.sh && \
+    echo 'done' >> /app/start.sh && \
+    echo 'echo "数据库连接成功"' >> /app/start.sh && \
+    echo '' >> /app/start.sh && \
+    echo '# 检查Redis连接（如果配置了Redis URL）' >> /app/start.sh && \
+    echo 'if [ -n "$REDIS_URL" ] && [ "$REDIS_URL" != "" ]; then' >> /app/start.sh && \
+    echo '  echo "检查Redis连接..."' >> /app/start.sh && \
+    echo '  # 使用node检查Redis连接' >> /app/start.sh && \
+    echo '  node -e "const Redis = require(\"ioredis\"); const redis = new Redis(process.env.REDIS_URL); redis.ping().then(() => { console.log(\"Redis连接成功\"); redis.quit(); process.exit(0); }).catch((err) => { console.error(\"Redis连接失败:\", err.message); process.exit(1); });" || {' >> /app/start.sh && \
+    echo '    echo "Redis连接失败，但继续启动应用（Redis为可选服务）"' >> /app/start.sh && \
+    echo '  }' >> /app/start.sh && \
+    echo 'else' >> /app/start.sh && \
+    echo '  echo "未配置Redis URL，跳过Redis连接检查"' >> /app/start.sh && \
+    echo 'fi' >> /app/start.sh && \
+    echo '' >> /app/start.sh && \
+    echo 'echo "启动应用..."' >> /app/start.sh && \
+    echo 'exec npm start' >> /app/start.sh && \
+    chmod +x /app/start.sh
 
 # 启动应用
 CMD ["/bin/sh", "/app/start.sh"]
