@@ -48,7 +48,7 @@ async function cleanupInvalidIpMappings(rooms: any[]) {
 }
 
 // 清理离线玩家的函数
-export async function cleanupOfflinePlayers() {
+async function cleanupOfflinePlayers() {
   try {
     const redis = getRedisClient();
     const rooms = await getAllRooms();
