@@ -9,6 +9,7 @@ import CardExchangeItem, { getCardRegionAndNumber } from '@/components/CardExcha
 import CardFilter from '@/components/CardFilter';
 import ActionTypeFilter from '@/components/ActionTypeFilter';
 import AddExchangeModal from '@/components/AddExchangeModal';
+import AnnouncementCarousel from '@/components/AnnouncementCarousel';
 import { AppreciationButton } from '@/components/AppreciationModal';
 import { PlusIcon, ArrowPathIcon, ExclamationTriangleIcon, CheckIcon, ArrowLeftIcon, ArrowRightIcon, SparklesIcon, HomeIcon, UserGroupIcon } from '@heroicons/react/24/outline';
 
@@ -273,6 +274,9 @@ export default function OverwatchMarketPage() {
             分享、交换、收集你的守望先锋卡片
           </p>
         </div>
+
+        {/* 轮播公告 */}
+        <AnnouncementCarousel />
 
         {/* 添加卡片交换按钮 */}
         <div className="text-center mb-6">

@@ -113,7 +113,17 @@ export default function AddExchangeModal({ isOpen, onClose, onSubmit, isSubmitti
                   </div>
                 )}
               </div>
-
+              {/* 交换建议提示 */}
+              <div className="bg-gradient-to-r from-blue-500/10 to-purple-500/10 border border-blue-500/30 rounded-lg sm:rounded-xl p-3 sm:p-4">
+                <div className="flex items-start gap-2.5 sm:gap-3">
+                  <InformationCircleIcon className="h-4 w-4 sm:h-5 sm:w-5 text-blue-400 mt-0.5 flex-shrink-0" />
+                  <div className="text-xs sm:text-sm min-w-0">
+                    <p className="text-blue-300 font-medium mb-1">交换建议</p>
+                    <p className="text-blue-200 leading-relaxed mb-2">优先推荐【索要卡片】和【交换卡片】模式，让卡片流通更高效！</p>
+                    <p className="text-blue-200 leading-relaxed">想要赠送？试试在【索要卡片】中寻找需要你卡片的玩家，互动性更强且能避免恶意倒卖。</p>
+                  </div>
+                </div>
+              </div>
               {/* 快速提示 */}
               <div className="bg-blue-900/30 border border-blue-500/30 rounded-lg sm:rounded-xl p-3 sm:p-4">
                 <div className="flex items-start gap-2.5 sm:gap-3">
@@ -125,16 +135,6 @@ export default function AddExchangeModal({ isOpen, onClose, onSubmit, isSubmitti
                 </div>
               </div>
 
-              {/* 交换建议提示 */}
-              <div className="bg-amber-900/30 border border-amber-500/30 rounded-lg sm:rounded-xl p-3 sm:p-4">
-                <div className="flex items-start gap-2.5 sm:gap-3">
-                  <ExclamationTriangleIcon className="h-4 w-4 sm:h-5 sm:w-5 text-amber-400 mt-0.5 flex-shrink-0" />
-                  <div className="text-xs sm:text-sm min-w-0">
-                    <p className="text-amber-300 font-medium mb-1">💡 建议优先使用交换模式</p>
-                    <p className="text-amber-200 leading-relaxed">推荐选择"交换卡片"而非"我要送出卡片"，避免卡片流入闲鱼等二手平台被恶意倒卖，保护社区交换环境。</p>
-                  </div>
-                </div>
-              </div>
 
               {/* 操作按钮 */}
               <div className="flex gap-2 sm:gap-3">
