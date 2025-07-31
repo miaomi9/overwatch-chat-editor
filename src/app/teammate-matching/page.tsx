@@ -3,6 +3,8 @@
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import TermsModal from '@/components/TermsModal';
+import { AppreciationButton } from '@/components/AppreciationModal';
+import Toast from '@/components/Toast';
 import {
   HomeIcon,
   ExclamationTriangleIcon,
@@ -316,67 +318,120 @@ const TeammateMatching: React.FC = () => {
        />
       <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-orange-900 p-4 mobile-padding">
       <div className="max-w-6xl mx-auto">
-        {/* 头部 */}
-        <div className="flex items-center justify-between mb-8">
-          <div className="flex items-center gap-4">
-            <img src="/textures/00000003A4EB.png" alt="守望先锋" className="w-10 h-10" />
-            <h1 className="text-3xl font-bold text-white bg-gradient-to-r from-orange-400 to-orange-600 bg-clip-text text-transparent">
-              守望先锋队友匹配
-            </h1>
+        {/* 头部导航 */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8 gap-4">
+          <div className="flex items-center gap-3 sm:gap-4">
+            <div className="flex items-center gap-3">
+              <img src="/textures/00000003A4EB.png" alt="守望先锋" className="w-8 h-8 sm:w-10 sm:h-10" />
+              <h1 className="text-xl sm:text-3xl font-bold text-white bg-gradient-to-r from-orange-400 to-orange-600 bg-clip-text text-transparent">
+                守望先锋队友匹配
+              </h1>
+            </div>
+            
+            {/* 导航链接 - 桌面端 */}
+            <div className="hidden sm:flex items-center gap-2">
+              <a 
+                href="/"
+                className="flex items-center gap-1.5 px-3 py-2 bg-blue-500/10 border border-blue-500/20 rounded-lg hover:bg-blue-500/20 hover:border-blue-400/30 transition-all duration-200 group"
+              >
+                <HomeIcon className="w-4 h-4 text-blue-400" />
+                <span className="text-white text-sm font-medium">聊天编辑器</span>
+              </a>
+              
+              <a 
+                href="/overwatch-market"
+                className="flex items-center gap-1.5 px-3 py-2 bg-purple-500/10 border border-purple-500/20 rounded-lg hover:bg-purple-500/20 hover:border-purple-400/30 transition-all duration-200 group"
+              >
+                <svg className="w-4 h-4 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                </svg>
+                <span className="text-white text-sm font-medium">卡片交换</span>
+              </a>
+              
+              <a 
+                href="/community-templates"
+                className="flex items-center gap-1.5 px-3 py-2 bg-orange-500/10 border border-orange-500/20 rounded-lg hover:bg-orange-500/20 hover:border-orange-400/30 transition-all duration-200 group"
+              >
+                <span className="text-sm">🎨</span>
+                <span className="text-white text-sm font-medium">社区模板</span>
+              </a>
+            </div>
           </div>
           
-          {/* 连接状态指示器 */}
-          <div className="flex items-center gap-2">
-            {isConnecting ? (
-              <>
-                <ArrowPathIcon className="w-4 h-4 text-yellow-400 animate-spin" />
-                <span className="text-yellow-400 text-sm">连接中...</span>
-              </>
-            ) : connectionError ? (
-              <>
-                <ExclamationTriangleIcon className="w-4 h-4 text-red-400" />
-                <span className="text-red-400 text-sm">连接失败</span>
-              </>
-            ) : (
-              <>
-                <CheckIcon className="w-4 h-4 text-green-400 animate-pulse" />
-                <span className="text-green-400 text-sm">已连接</span>
-              </>
-            )}
+          <div className="flex items-center justify-between sm:justify-end gap-3">
+            {/* 移动端导航链接 */}
+            <div className="flex sm:hidden items-center gap-2">
+              <a 
+                href="/"
+                className="flex items-center gap-1 px-2 py-1.5 bg-blue-500/10 border border-blue-500/20 rounded-lg hover:bg-blue-500/20 transition-all duration-200"
+              >
+                <HomeIcon className="w-4 h-4 text-blue-400" />
+                <span className="text-white text-xs font-medium">编辑器</span>
+              </a>
+              
+              <a 
+                href="/overwatch-market"
+                className="flex items-center gap-1 px-2 py-1.5 bg-purple-500/10 border border-purple-500/20 rounded-lg hover:bg-purple-500/20 transition-all duration-200"
+              >
+                <svg className="w-4 h-4 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                </svg>
+                <span className="text-white text-xs font-medium">卡片</span>
+              </a>
+              
+              <a 
+                href="/community-templates"
+                className="flex items-center gap-1 px-2 py-1.5 bg-orange-500/10 border border-orange-500/20 rounded-lg hover:bg-orange-500/20 transition-all duration-200"
+              >
+                <span className="text-xs">🎨</span>
+                <span className="text-white text-xs font-medium">模板</span>
+              </a>
+            </div>
+            
+            {/* 功能按钮 */}
+            <div className="flex items-center gap-2">
+              <AppreciationButton className="px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm" />
+              
+              {/* 连接状态指示器 */}
+              <div className="flex items-center gap-1.5 px-2 py-1.5 bg-gray-800/50 border border-gray-600/30 rounded-lg">
+                {isConnecting ? (
+                  <>
+                    <ArrowPathIcon className="w-3 h-3 sm:w-4 sm:h-4 text-yellow-400 animate-spin" />
+                    <span className="text-yellow-400 text-xs sm:text-sm">连接中</span>
+                  </>
+                ) : connectionError ? (
+                  <>
+                    <ExclamationTriangleIcon className="w-3 h-3 sm:w-4 sm:h-4 text-red-400" />
+                    <span className="text-red-400 text-xs sm:text-sm">连接失败</span>
+                  </>
+                ) : (
+                  <>
+                    <CheckIcon className="w-3 h-3 sm:w-4 sm:h-4 text-green-400 animate-pulse" />
+                    <span className="text-green-400 text-xs sm:text-sm">已连接</span>
+                  </>
+                )}
+              </div>
+            </div>
           </div>
         </div>
         
-        {/* 全局错误提示 */}
-        {error && (
-          <div className="mb-6 p-4 bg-red-500/10 border border-red-500/30 rounded-xl flex items-center gap-3 animate-slide-in-from-top animate-shake">
-            <ExclamationTriangleIcon className="w-6 h-6 text-red-400 animate-heartbeat" />
-            <div className="flex-1">
-              <p className="text-red-400 font-medium mobile-text-sm">{error}</p>
-            </div>
-            <button 
-              onClick={() => setError('')}
-              className="text-red-400 hover:text-red-300 transition-colors p-1 hover:bg-red-500/20 rounded"
-            >
-              <XMarkIcon className="w-4 h-4 text-red-400" />
-            </button>
-          </div>
-        )}
+        {/* Toast错误提示 */}
+        <Toast
+          message={error}
+          type="error"
+          isVisible={!!error}
+          onClose={() => setError('')}
+          duration={5000}
+        />
 
-        {/* 全局成功提示 */}
-        {successMessage && (
-          <div className="mb-6 p-4 bg-green-500/10 border border-green-500/30 rounded-xl flex items-center gap-3 animate-slide-in-from-top">
-            <CheckIcon className="w-6 h-6 text-green-400" />
-            <div className="flex-1">
-              <p className="text-green-400 font-medium mobile-text-sm">{successMessage}</p>
-            </div>
-            <button 
-              onClick={() => setSuccessMessage('')}
-              className="text-green-400 hover:text-green-300 transition-colors p-1 hover:bg-green-500/20 rounded"
-            >
-              <XMarkIcon className="w-4 h-4 text-green-400" />
-            </button>
-          </div>
-        )}
+        {/* Toast成功提示 */}
+        <Toast
+          message={successMessage}
+          type="success"
+          isVisible={!!successMessage}
+          onClose={() => setSuccessMessage('')}
+          duration={3000}
+        />
 
         {/* 连接状态提示 */}
         {isConnecting && (
@@ -407,13 +462,26 @@ const TeammateMatching: React.FC = () => {
           <div className="space-y-6">
             {/* 输入战网ID和快速加入 */}
             <div className="bg-gray-900/80 backdrop-blur-sm border border-orange-500/20 rounded-xl p-6 mb-6 transition-all duration-300 hover:border-orange-500/40">
-              <div className="flex items-center gap-2 mb-4">
-                <img src="/textures/0000000039DA.png" alt="组队" className="w-6 h-6" />
-                <h2 className="text-xl font-bold text-orange-400">快速匹配</h2>
+              <div className="flex items-center gap-2 mb-6">
+                <img src="/textures/0000000039DA.png" alt="组队" className="w-8 h-8" />
+                <h2 className="text-2xl font-bold text-orange-400">开始匹配队友</h2>
+              </div>
+              
+              {/* 战网ID输入引导 */}
+              <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-4 mb-6">
+                <div className="flex items-center gap-2 text-blue-400 text-lg font-semibold mb-2">
+                  <InformationCircleIcon className="w-6 h-6" />
+                  <span>请输入您的战网ID</span>
+                </div>
+                <div className="text-blue-300 space-y-2">
+                  <p className="text-base">• 格式：<span className="text-white font-mono bg-gray-700 px-2 py-1 rounded">昵称#数字</span></p>
+                  <p className="text-base">• 示例：<span className="text-white font-mono bg-gray-700 px-2 py-1 rounded">Player#12345</span></p>
+                  <p className="text-sm text-blue-200">数字部分通常是3-5位数字，可在战网客户端或游戏内查看</p>
+                </div>
               </div>
               
               {/* 离线提示 */}
-              <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-3 mb-4">
+              <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-3 mb-6">
                 <div className="flex items-center gap-2 text-yellow-400 text-sm">
                   <ExclamationTriangleIcon className="w-4 h-4" />
                   <span className="font-medium">重要提示：</span>
@@ -427,6 +495,9 @@ const TeammateMatching: React.FC = () => {
                 {/* 输入框和按钮组合 */}
                 <div className="flex flex-col sm:flex-row gap-3">
                   <div className="flex-1 relative">
+                    <label className="block text-white font-medium mb-2 text-lg">
+                      战网ID *
+                    </label>
                     <input
                       type="text"
                       value={battleTag}
@@ -443,8 +514,8 @@ const TeammateMatching: React.FC = () => {
                           }
                         }
                       }}
-                      placeholder="例如：Player#12345（昵称#3-5位数字）"
-                      className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all duration-200"
+                      placeholder="请输入您的战网ID，例如：Player#12345"
+                      className="w-full px-4 py-4 text-lg bg-gray-700/50 border-2 border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all duration-200"
                       maxLength={50}
                       disabled={isJoining}
                     />
@@ -456,34 +527,74 @@ const TeammateMatching: React.FC = () => {
                   </div>
                   
                   {/* 快速加入按钮 */}
-                  <button
-                    onClick={() => {
-                      const availableRoom = rooms.find(room => room.players.length < 2);
-                      if (availableRoom) {
-                        joinRoom(availableRoom.id);
-                      }
-                    }}
-                    disabled={!battleTag.trim() || isJoining}
-                    className="px-6 py-3 bg-gradient-to-r from-orange-600 to-orange-700 hover:from-orange-700 hover:to-orange-800 disabled:from-gray-600 disabled:to-gray-700 disabled:cursor-not-allowed text-white rounded-lg transition-all duration-200 font-medium flex items-center justify-center gap-2 transform hover:scale-105 disabled:hover:scale-100 sm:min-w-[140px]"
-                  >
-                    {isJoining ? (
-                      <>
-                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                        加入中...
-                      </>
-                    ) : (
-                      <>
-                        <RocketLaunchIcon className="w-4 h-4" />
-                        快速匹配
-                      </>
+                  <div className="sm:self-end relative">
+                    {/* 当没有输入时显示指引箭头 */}
+                    {!battleTag.trim() && (
+                      <div className="absolute -top-12 left-1/2 transform -translate-x-1/2 sm:-left-16 sm:top-1/2 sm:-translate-y-1/2 sm:translate-x-0 flex items-center gap-2 animate-bounce">
+                        <div className="bg-orange-500 text-white px-3 py-2 rounded-lg text-sm font-medium shadow-lg relative">
+                          请先输入战网ID
+                          {/* 箭头指向输入框 */}
+                          <div className="absolute top-full left-1/2 transform -translate-x-1/2 sm:hidden">
+                            <div className="w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-orange-500"></div>
+                          </div>
+                          {/* 桌面端箭头指向左侧 */}
+                          <div className="hidden sm:block absolute right-full top-1/2 transform -translate-y-1/2">
+                            <div className="w-0 h-0 border-t-4 border-b-4 border-r-4 border-transparent border-r-orange-500"></div>
+                          </div>
+                        </div>
+                      </div>
                     )}
-                  </button>
+                    
+                    <button
+                      onClick={() => {
+                        if (!battleTag.trim()) {
+                          // 如果没有输入，聚焦到输入框
+                          const input = document.querySelector('input[type="text"]') as HTMLInputElement;
+                          if (input) {
+                            input.focus();
+                            input.classList.add('animate-pulse');
+                            setTimeout(() => {
+                              input.classList.remove('animate-pulse');
+                            }, 1000);
+                          }
+                          return;
+                        }
+                        const availableRoom = rooms.find(room => room.players.length < 2);
+                        if (availableRoom) {
+                          joinRoom(availableRoom.id);
+                        }
+                      }}
+                      disabled={isJoining}
+                      className={`w-full sm:w-auto px-8 py-4 text-lg rounded-lg transition-all duration-200 font-semibold flex items-center justify-center gap-3 transform shadow-lg ${
+                        !battleTag.trim() 
+                          ? 'bg-gradient-to-r from-gray-600 to-gray-700 hover:from-gray-500 hover:to-gray-600 text-gray-300 cursor-pointer hover:scale-105' 
+                          : 'bg-gradient-to-r from-orange-600 to-orange-700 hover:from-orange-700 hover:to-orange-800 text-white hover:scale-105'
+                      } ${isJoining ? 'cursor-not-allowed' : ''}`}
+                    >
+                      {isJoining ? (
+                        <>
+                          <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                          正在匹配...
+                        </>
+                      ) : !battleTag.trim() ? (
+                        <>
+                          <InformationCircleIcon className="w-5 h-5" />
+                          请先输入战网ID
+                        </>
+                      ) : (
+                        <>
+                          <RocketLaunchIcon className="w-5 h-5" />
+                          开始匹配
+                        </>
+                      )}
+                    </button>
+                  </div>
                 </div>
                 
                 <div className="flex items-center justify-between text-sm">
                   <p className="text-gray-400 flex items-center gap-1">
-                    <InformationCircleIcon className="w-3 h-3" />
-                    输入战网ID后点击快速匹配或按回车键
+                    <CheckIcon className="w-4 h-4 text-green-400" />
+                    输入完成后点击"开始匹配"按钮或按回车键
                   </p>
                   <p className="text-gray-400">
                     {battleTag.length}/50
@@ -569,21 +680,44 @@ const TeammateMatching: React.FC = () => {
 
                       {room.players.length < 2 ? (
                         <button
-                          onClick={() => joinRoom(room.id)}
-                          disabled={!battleTag.trim() || isJoining}
-                          className="w-full px-4 py-2 bg-gradient-to-r from-orange-600 to-orange-700 hover:from-orange-700 hover:to-orange-800 disabled:from-gray-600 disabled:to-gray-700 disabled:cursor-not-allowed text-white rounded-lg transition-all duration-200 font-medium flex items-center justify-center gap-2 transform hover:scale-105 disabled:hover:scale-100"
+                          onClick={() => {
+                            if (!battleTag.trim()) {
+                              // 如果没有输入，聚焦到输入框并显示提示
+                              const input = document.querySelector('input[type="text"]') as HTMLInputElement;
+                              if (input) {
+                                input.focus();
+                                input.classList.add('animate-pulse');
+                                setTimeout(() => {
+                                  input.classList.remove('animate-pulse');
+                                }, 1000);
+                              }
+                              // 滚动到输入框位置
+                              input?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                              return;
+                            }
+                            joinRoom(room.id);
+                          }}
+                          disabled={isJoining}
+                          className={`w-full px-4 py-2 rounded-lg transition-all duration-200 font-medium flex items-center justify-center gap-2 transform ${
+                            !battleTag.trim()
+                              ? 'bg-gradient-to-r from-gray-600 to-gray-700 hover:from-gray-500 hover:to-gray-600 text-gray-300 cursor-pointer hover:scale-105'
+                              : 'bg-gradient-to-r from-orange-600 to-orange-700 hover:from-orange-700 hover:to-orange-800 text-white hover:scale-105'
+                          } ${isJoining ? 'cursor-not-allowed' : ''}`}
                         >
                           {isJoining ? (
                             <>
                               <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                               加入中...
                             </>
+                          ) : !battleTag.trim() ? (
+                            <>
+                              <InformationCircleIcon className="w-4 h-4" />
+                              请先输入战网ID
+                            </>
                           ) : (
                             <>
-                              <div className="flex items-center gap-2">
-                              <RocketLaunchIcon className="w-4 h-4 text-white" />
+                              <RocketLaunchIcon className="w-4 h-4" />
                               加入房间
-                            </div>
                             </>
                           )}
                         </button>
@@ -681,11 +815,11 @@ const TeammateMatching: React.FC = () => {
                             复制
                           </button>
                         </div>
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 text-gray-400 text-sm">
                           <UserGroupIcon className="w-3 h-3 text-gray-400" />
-                          <p className="text-gray-400 text-sm">
+                          <span>
                             加入时间：{new Date(player.joinedAt).toLocaleTimeString()}
-                          </p>
+                          </span>
                         </div>
                       </div>
                     </div>
