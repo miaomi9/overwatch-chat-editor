@@ -90,8 +90,8 @@ const TeammateMatching: React.FC = () => {
       setError('连接服务器失败，请检查网络连接');
     };
 
-    // 页面卸载时自动离开房间
-    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+    // 离开房间的通用函数
+    const handleLeaveRoom = () => {
       if (currentRoom && currentPlayerId) {
         // 使用 navigator.sendBeacon 确保请求能在页面关闭前发送
         const data = JSON.stringify({ 
@@ -132,13 +132,40 @@ const TeammateMatching: React.FC = () => {
         }
       }
     };
+
+    // 页面卸载时自动离开房间
+    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+      handleLeaveRoom();
+    };
+
+    // 检测是否为移动设备
+    const isMobile = () => {
+      return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    };
+
+    // 页面可见性变化时处理离线检测（仅在移动端生效）
+    const handleVisibilityChange = () => {
+      if (document.hidden && isMobile()) {
+        // 页面变为不可见时，可能是用户切换了应用或关闭了浏览器
+        // 在移动端，这通常比beforeunload更可靠
+        handleLeaveRoom();
+      }
+    };
     
     window.addEventListener('beforeunload', handleBeforeUnload);
+    // 只在移动端添加visibilitychange监听器
+    if (isMobile()) {
+      document.addEventListener('visibilitychange', handleVisibilityChange);
+    }
 
     // 清理函数：关闭SSE连接和移除事件监听器
     return () => {
       eventSource.close();
       window.removeEventListener('beforeunload', handleBeforeUnload);
+      // 只在移动端移除visibilitychange监听器
+      if (isMobile()) {
+        document.removeEventListener('visibilitychange', handleVisibilityChange);
+      }
       // 组件卸载时也尝试离开房间
       if (currentRoom && currentPlayerId) {
         leaveRoom();
@@ -378,14 +405,28 @@ const TeammateMatching: React.FC = () => {
         {!currentRoom ? (
           // 房间列表视图
           <div className="space-y-6">
-            {/* 输入战网ID */}
+            {/* 输入战网ID和快速加入 */}
             <div className="bg-gray-900/80 backdrop-blur-sm border border-orange-500/20 rounded-xl p-6 mb-6 transition-all duration-300 hover:border-orange-500/40">
               <div className="flex items-center gap-2 mb-4">
                 <img src="/textures/0000000039DA.png" alt="组队" className="w-6 h-6" />
-                <h2 className="text-xl font-bold text-orange-400">输入战网ID</h2>
+                <h2 className="text-xl font-bold text-orange-400">快速匹配</h2>
+              </div>
+              
+              {/* 离线提示 */}
+              <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-3 mb-4">
+                <div className="flex items-center gap-2 text-yellow-400 text-sm">
+                  <ExclamationTriangleIcon className="w-4 h-4" />
+                  <span className="font-medium">重要提示：</span>
                 </div>
-                <div className="space-y-3">
-                  <div className="relative">
+                <p className="text-yellow-300 text-sm mt-1 ml-6">
+                  离开页面将自动退出匹配，请保持页面开启直到匹配完成
+                </p>
+              </div>
+
+              <div className="space-y-4">
+                {/* 输入框和按钮组合 */}
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <div className="flex-1 relative">
                     <input
                       type="text"
                       value={battleTag}
@@ -413,11 +454,37 @@ const TeammateMatching: React.FC = () => {
                       </div>
                     )}
                   </div>
-                  <div className="flex items-center justify-between text-sm">
-                    <p className="text-gray-400 flex items-center gap-1">
-                      <InformationCircleIcon className="w-3 h-3" />
-                      提示：输入完成后按回车键快速加入房间
-                    </p>
+                  
+                  {/* 快速加入按钮 */}
+                  <button
+                    onClick={() => {
+                      const availableRoom = rooms.find(room => room.players.length < 2);
+                      if (availableRoom) {
+                        joinRoom(availableRoom.id);
+                      }
+                    }}
+                    disabled={!battleTag.trim() || isJoining}
+                    className="px-6 py-3 bg-gradient-to-r from-orange-600 to-orange-700 hover:from-orange-700 hover:to-orange-800 disabled:from-gray-600 disabled:to-gray-700 disabled:cursor-not-allowed text-white rounded-lg transition-all duration-200 font-medium flex items-center justify-center gap-2 transform hover:scale-105 disabled:hover:scale-100 sm:min-w-[140px]"
+                  >
+                    {isJoining ? (
+                      <>
+                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                        加入中...
+                      </>
+                    ) : (
+                      <>
+                        <RocketLaunchIcon className="w-4 h-4" />
+                        快速匹配
+                      </>
+                    )}
+                  </button>
+                </div>
+                
+                <div className="flex items-center justify-between text-sm">
+                  <p className="text-gray-400 flex items-center gap-1">
+                    <InformationCircleIcon className="w-3 h-3" />
+                    输入战网ID后点击快速匹配或按回车键
+                  </p>
                   <p className="text-gray-400">
                     {battleTag.length}/50
                   </p>
