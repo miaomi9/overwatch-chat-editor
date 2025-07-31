@@ -47,18 +47,18 @@ export interface Room {
 
 // Redis键名
 export const REDIS_KEYS = {
-  ROOMS: 'teammate_matching:rooms',
-  ROOM_PREFIX: 'teammate_matching:room:',
-  EVENTS: 'teammate_matching:events',
-  IP_ROOM_MAP: 'teammate_matching:ip_room_map',
+  ROOMS: (region: string) => `teammate_matching:${region}:rooms`,
+  ROOM_PREFIX: (region: string) => `teammate_matching:${region}:room:`,
+  EVENTS: (region: string) => `teammate_matching:${region}:events`,
+  IP_ROOM_MAP: (region: string) => `teammate_matching:${region}:ip_room_map`,
 };
 
 // 初始化房间数据
-export async function initializeRooms() {
+export async function initializeRooms(region: string = 'cn') {
   const client = getRedisClient();
   
   // 检查是否已经初始化
-  const exists = await client.exists(REDIS_KEYS.ROOMS);
+  const exists = await client.exists(REDIS_KEYS.ROOMS(region));
   if (exists) {
     return;
   }
@@ -74,63 +74,63 @@ export async function initializeRooms() {
   }
 
   // 保存到Redis
-  await client.set(REDIS_KEYS.ROOMS, JSON.stringify(rooms));
-  console.log('初始化30个房间完成');
+  await client.set(REDIS_KEYS.ROOMS(region), JSON.stringify(rooms));
+  console.log(`初始化${region}服务器30个房间完成`);
 }
 
 // 获取所有房间
-export async function getAllRooms(): Promise<Room[]> {
+export async function getAllRooms(region: string = 'cn'): Promise<Room[]> {
   const client = getRedisClient();
-  const roomsData = await client.get(REDIS_KEYS.ROOMS);
+  const roomsData = await client.get(REDIS_KEYS.ROOMS(region));
   
   if (!roomsData) {
-    await initializeRooms();
-    return getAllRooms();
+    await initializeRooms(region);
+    return getAllRooms(region);
   }
   
   return JSON.parse(roomsData);
 }
 
 // 更新房间数据
-export async function updateRooms(rooms: Room[]) {
+export async function updateRooms(rooms: Room[], region: string = 'cn') {
   const client = getRedisClient();
-  await client.set(REDIS_KEYS.ROOMS, JSON.stringify(rooms));
+  await client.set(REDIS_KEYS.ROOMS(region), JSON.stringify(rooms));
   
   // 发布更新事件
-  await client.publish(REDIS_KEYS.EVENTS, JSON.stringify({
+  await client.publish(REDIS_KEYS.EVENTS(region), JSON.stringify({
     type: 'rooms_update',
     rooms,
   }));
 }
 
 // 发布倒计时更新事件
-export async function publishCountdownUpdate(countdown: number) {
+export async function publishCountdownUpdate(countdown: number, region: string = 'cn') {
   const client = getRedisClient();
-  await client.publish(REDIS_KEYS.EVENTS, JSON.stringify({
+  await client.publish(REDIS_KEYS.EVENTS(region), JSON.stringify({
     type: 'countdown_update',
     countdown,
   }));
 }
 
 // IP管理函数
-export async function setIpRoomMapping(ip: string, roomId: string) {
+export async function setIpRoomMapping(ip: string, roomId: string, region: string = 'cn') {
   const redis = getRedisClient();
-  await redis.hset(REDIS_KEYS.IP_ROOM_MAP, ip, roomId);
+  await redis.hset(REDIS_KEYS.IP_ROOM_MAP(region), ip, roomId);
 }
 
-export async function getIpRoomMapping(ip: string): Promise<string | null> {
+export async function getIpRoomMapping(ip: string, region: string = 'cn'): Promise<string | null> {
   const redis = getRedisClient();
-  return await redis.hget(REDIS_KEYS.IP_ROOM_MAP, ip);
+  return await redis.hget(REDIS_KEYS.IP_ROOM_MAP(region), ip);
 }
 
-export async function removeIpRoomMapping(ip: string) {
+export async function removeIpRoomMapping(ip: string, region: string = 'cn') {
   const redis = getRedisClient();
-  await redis.hdel(REDIS_KEYS.IP_ROOM_MAP, ip);
+  await redis.hdel(REDIS_KEYS.IP_ROOM_MAP(region), ip);
 }
 
-export async function getAllIpRoomMappings(): Promise<Record<string, string>> {
+export async function getAllIpRoomMappings(region: string = 'cn'): Promise<Record<string, string>> {
   const redis = getRedisClient();
-  return await redis.hgetall(REDIS_KEYS.IP_ROOM_MAP);
+  return await redis.hgetall(REDIS_KEYS.IP_ROOM_MAP(region));
 }
 
 export default getRedisClient;

@@ -4,8 +4,9 @@ import { getClientIP, shouldRestrictIP } from '../../../../utils/ipUtils';
 
 export async function POST(request: NextRequest) {
   try {
-    const { roomId, battleTag } = await request.json();
+    const { roomId, battleTag, region } = await request.json();
     const clientIP = getClientIP(request);
+    const serverRegion = region || 'cn';
     
     if (!roomId || !battleTag) {
       return NextResponse.json(
@@ -14,8 +15,8 @@ export async function POST(request: NextRequest) {
       );
     }
     
-    // 验证战网ID格式 (ABC#5XXX，其中XXX是3-5位数字)
-    const battleTagRegex = /^[\w\u4e00-\u9fa5]+#\d{3,5}$/;
+    // 验证战网ID格式 (ABC#5XXX，其中XXX是3-7位数字)
+    const battleTagRegex = /^[\w\u4e00-\u9fa5]+#\d{3,7}$/;
     if (!battleTagRegex.test(battleTag) || battleTag.length > 50) {
       return NextResponse.json(
         { error: '战网ID格式不正确，请输入正确格式（例如：Player#12345）' },
@@ -23,7 +24,7 @@ export async function POST(request: NextRequest) {
       );
     }
     
-    const rooms = await getAllRooms();
+    const rooms = await getAllRooms(serverRegion);
     const room = rooms.find(r => r.id === roomId);
     
     if (!room) {
@@ -62,7 +63,7 @@ export async function POST(request: NextRequest) {
     
     // IP限制检查（除了localhost）
     if (shouldRestrictIP(clientIP)) {
-      const existingRoomId = await getIpRoomMapping(clientIP);
+      const existingRoomId = await getIpRoomMapping(clientIP, serverRegion);
       if (existingRoomId && existingRoomId !== roomId) {
         // 检查该IP对应的房间是否还存在该IP的玩家
         const existingRoom = rooms.find(r => r.id === existingRoomId);
@@ -86,7 +87,7 @@ export async function POST(request: NextRequest) {
     
     // 设置IP与房间的映射（如果需要限制）
     if (shouldRestrictIP(clientIP)) {
-      await setIpRoomMapping(clientIP, roomId);
+      await setIpRoomMapping(clientIP, roomId, serverRegion);
     }
     
     // 如果房间满了，开始倒计时
@@ -96,7 +97,7 @@ export async function POST(request: NextRequest) {
       
       // 启动3分钟倒计时
       setTimeout(async () => {
-        const currentRooms = await getAllRooms();
+        const currentRooms = await getAllRooms(serverRegion);
         const currentRoom = currentRooms.find(r => r.id === roomId);
         
         if (currentRoom && currentRoom.status === 'countdown' && 
@@ -105,11 +106,11 @@ export async function POST(request: NextRequest) {
           currentRoom.status = 'matched';
           
           // 立即更新状态
-          await updateRooms(currentRooms);
+          await updateRooms(currentRooms, serverRegion);
           
           // 再延迟5秒后清空房间
           setTimeout(async () => {
-            const finalRooms = await getAllRooms();
+            const finalRooms = await getAllRooms(serverRegion);
             const finalRoom = finalRooms.find(r => r.id === roomId);
             
             if (finalRoom && finalRoom.status === 'matched') {
@@ -117,17 +118,17 @@ export async function POST(request: NextRequest) {
               finalRoom.status = 'waiting';
               delete finalRoom.countdownStart;
               
-              await updateRooms(finalRooms);
+              await updateRooms(finalRooms, serverRegion);
             }
           }, 5000);
         }
       }, 3 * 60 * 1000); // 3分钟
       
       // 启动倒计时广播
-      startCountdownBroadcast(roomId, room.countdownStart);
+      startCountdownBroadcast(roomId, room.countdownStart, serverRegion);
     }
     
-    await updateRooms(rooms);
+    await updateRooms(rooms, serverRegion);
     
     return NextResponse.json({ 
       success: true, 
@@ -143,7 +144,7 @@ export async function POST(request: NextRequest) {
 }
 
 // 倒计时广播函数
-function startCountdownBroadcast(roomId: string, startTime: number) {
+function startCountdownBroadcast(roomId: string, startTime: number, region: string = 'cn') {
   const interval = setInterval(async () => {
     const elapsed = Math.floor((Date.now() - startTime) / 1000);
     const remaining = Math.max(0, 180 - elapsed); // 3分钟 = 180秒
@@ -154,7 +155,7 @@ function startCountdownBroadcast(roomId: string, startTime: number) {
     }
     
     // 检查房间是否还在倒计时状态
-    const rooms = await getAllRooms();
+    const rooms = await getAllRooms(region);
     const room = rooms.find(r => r.id === roomId);
     
     if (!room || room.status !== 'countdown' || room.countdownStart !== startTime) {
@@ -162,6 +163,6 @@ function startCountdownBroadcast(roomId: string, startTime: number) {
       return;
     }
     
-    await publishCountdownUpdate(remaining);
+    await publishCountdownUpdate(remaining, region);
   }, 1000);
 }

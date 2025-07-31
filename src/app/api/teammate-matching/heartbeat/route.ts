@@ -3,7 +3,8 @@ import { getRedisClient, getAllRooms, updateRooms, getAllIpRoomMappings, removeI
 
 export async function POST(request: NextRequest) {
   try {
-    const { roomId, playerId } = await request.json();
+    const { roomId, playerId, region } = await request.json();
+    const serverRegion = region || 'cn';
     
     if (!roomId || !playerId) {
       return NextResponse.json(
@@ -29,16 +30,16 @@ export async function POST(request: NextRequest) {
 }
 
 // 清理无效IP映射的函数
-async function cleanupInvalidIpMappings(rooms: any[]) {
+async function cleanupInvalidIpMappings(rooms: any[], region: string = 'cn') {
   try {
-    const ipMappings = await getAllIpRoomMappings();
+    const ipMappings = await getAllIpRoomMappings(region);
     
     for (const [ip, roomId] of Object.entries(ipMappings)) {
       const room = rooms.find(r => r.id === roomId);
       
       // 如果房间不存在或房间为空，清理IP映射
       if (!room || room.players.length === 0) {
-        await removeIpRoomMapping(ip);
+        await removeIpRoomMapping(ip, region);
         console.log(`清理无效IP映射: ${ip} -> ${roomId}`);
       }
     }
@@ -48,10 +49,10 @@ async function cleanupInvalidIpMappings(rooms: any[]) {
 }
 
 // 清理离线玩家的函数
-async function cleanupOfflinePlayers() {
+async function cleanupOfflinePlayers(region: string = 'cn') {
   try {
     const redis = getRedisClient();
-    const rooms = await getAllRooms();
+    const rooms = await getAllRooms(region);
     let hasChanges = false;
     
     for (const room of rooms) {
@@ -83,10 +84,10 @@ async function cleanupOfflinePlayers() {
     }
     
     if (hasChanges) {
-      await updateRooms(rooms);
+      await updateRooms(rooms, region);
       
       // 清理无效的IP映射
-      await cleanupInvalidIpMappings(rooms);
+      await cleanupInvalidIpMappings(rooms, region);
     }
   } catch (error) {
     console.error('清理离线玩家错误:', error);
@@ -95,5 +96,9 @@ async function cleanupOfflinePlayers() {
 
 // 启动定期清理任务
 if (typeof global !== 'undefined' && !(global as any).cleanupInterval) {
-  (global as any).cleanupInterval = setInterval(cleanupOfflinePlayers, 15000); // 每15秒检查一次
+  (global as any).cleanupInterval = setInterval(async () => {
+    // 清理所有区域的离线玩家
+    await cleanupOfflinePlayers('cn');
+    await cleanupOfflinePlayers('global');
+  }, 15000); // 每15秒检查一次
 }

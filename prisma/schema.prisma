@@ -87,3 +87,15 @@ model CardExchange {
   
   @@map("card_exchanges")
 }
+
+model TeammateMatchRecord {
+  id          String   @id @default(cuid())
+  roomId      String   // 房间ID
+  region      String   // 服务器区域 (cn/global)
+  playerCount Int      // 匹配时的玩家数量
+  playerTags  String   @db.Text // 玩家战网标签，JSON格式存储
+  matchedAt   DateTime @default(now()) // 匹配成功时间
+  createdAt   DateTime @default(now())
+  
+  @@map("teammate_match_records")
+}

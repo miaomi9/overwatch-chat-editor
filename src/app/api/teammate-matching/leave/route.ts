@@ -4,7 +4,7 @@ import { getClientIP, shouldRestrictIP } from '../../../../utils/ipUtils';
 
 export async function POST(request: NextRequest) {
   try {
-    let roomId, playerId;
+    let roomId, playerId, region;
     const clientIP = getClientIP(request);
     
     // 处理不同类型的请求体（JSON或纯文本）
@@ -13,6 +13,7 @@ export async function POST(request: NextRequest) {
       const body = await request.json();
       roomId = body.roomId;
       playerId = body.playerId;
+      region = body.region;
     } else {
       // 处理 navigator.sendBeacon 发送的纯文本
       const text = await request.text();
@@ -20,11 +21,14 @@ export async function POST(request: NextRequest) {
         const body = JSON.parse(text);
         roomId = body.roomId;
         playerId = body.playerId;
+        region = body.region;
       } catch {
         // 如果解析失败，可能是直接的roomId字符串
         roomId = text;
       }
     }
+    
+    const serverRegion = region || 'cn';
     
     if (!roomId) {
       return NextResponse.json(
@@ -33,7 +37,7 @@ export async function POST(request: NextRequest) {
       );
     }
     
-    const rooms = await getAllRooms();
+    const rooms = await getAllRooms(serverRegion);
     const room = rooms.find(r => r.id === roomId);
     
     if (!room) {
@@ -73,10 +77,10 @@ export async function POST(request: NextRequest) {
     
     // 清理IP映射（如果需要限制）
     if (shouldRestrictIP(clientIP)) {
-      await removeIpRoomMapping(clientIP);
+      await removeIpRoomMapping(clientIP, serverRegion);
     }
     
-    await updateRooms(rooms);
+    await updateRooms(rooms, serverRegion);
     
     return NextResponse.json({ success: true });
   } catch (error) {
