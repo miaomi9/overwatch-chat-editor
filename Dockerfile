@@ -53,18 +53,7 @@ echo "数据库连接成功"
 if [ -n "$REDIS_URL" ] && [ "$REDIS_URL" != "" ]; then
   echo "检查Redis连接..."
   # 使用node检查Redis连接
-  node -e "
-    const Redis = require('ioredis');
-    const redis = new Redis(process.env.REDIS_URL);
-    redis.ping().then(() => {
-      console.log('Redis连接成功');
-      redis.quit();
-      process.exit(0);
-    }).catch((err) => {
-      console.error('Redis连接失败:', err.message);
-      process.exit(1);
-    });
-  " || {
+  node -e "const Redis = require('ioredis'); const redis = new Redis(process.env.REDIS_URL); redis.ping().then(() => { console.log('Redis连接成功'); redis.quit(); process.exit(0); }).catch((err) => { console.error('Redis连接失败:', err.message); process.exit(1); });" || {
     echo "Redis连接失败，但继续启动应用（Redis为可选服务）"
   }
 else
