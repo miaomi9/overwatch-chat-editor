@@ -1,25 +1,27 @@
 #!/bin/bash
 
 # 守望先锋聊天编辑器 Docker 部署脚本
-# 使用方法: ./deploy.sh [端口号] [数据库URL]
-# 例如: ./deploy.sh 3001 "mysql://root:password@host.docker.internal:3306/overwatch"
-# 注意: 如果不提供数据库URL，将使用默认的 localhost 配置（仅适用于开发环境）
+# 使用方法: ./deploy.sh [端口号] [数据库URL] [Redis URL]
+# 例如: ./deploy.sh 3001 "mysql://root:password@host.docker.internal:3306/overwatch" "redis://:password@localhost:6379"
+# 注意: 如果不提供数据库URL或Redis URL，将使用默认的 localhost 配置（仅适用于开发环境）
 
 set -e
 
-# 默认端口和数据库URL
+# 默认端口、数据库URL和Redis URL
 DEFAULT_PORT=3000
 DEFAULT_DATABASE_URL="mysql://root:123456@host.docker.internal:3306/overwatch"
+DEFAULT_REDIS_URL="redis://:password@localhost:6379"
 
 # 获取参数
 PORT=${1:-$DEFAULT_PORT}
 DATABASE_URL=${2:-$DEFAULT_DATABASE_URL}
+REDIS_URL=${3:-$DEFAULT_REDIS_URL}
 
 # 验证端口号
 if ! [[ "$PORT" =~ ^[0-9]+$ ]] || [ "$PORT" -lt 1 ] || [ "$PORT" -gt 65535 ]; then
     echo "❌ 错误: 端口号必须是 1-65535 之间的数字"
-    echo "使用方法: ./deploy.sh [端口号] [数据库URL]"
-    echo "例如: ./deploy.sh 3001 \"mysql://root:password@host.docker.internal:3306/overwatch\""
+    echo "使用方法: ./deploy.sh [端口号] [数据库URL] [Redis URL]"
+    echo "例如: ./deploy.sh 3001 \"mysql://root:password@host.docker.internal:3306/overwatch\" \"redis://:password@localhost:6379\""
     exit 1
 fi
 
@@ -32,6 +34,7 @@ echo "🚀 开始部署守望先锋聊天编辑器..."
 echo "📦 应用名称: $APP_NAME"
 echo "🔌 端口: $PORT"
 echo "🗄️  数据库: $DATABASE_URL"
+echo "🔴 Redis: $REDIS_URL"
 echo "🐳 容器名称: $CONTAINER_NAME"
 echo ""
 
@@ -92,7 +95,7 @@ docker run -d \
     --name "$CONTAINER_NAME" \
     -p "$PORT:3000" \
     -e "DATABASE_URL=$DATABASE_URL" \
-    --restart unless-stopped \
+    -e "REDIS_URL=$REDIS_URL" \
     "$IMAGE_NAME"
 
 if [ $? -ne 0 ]; then

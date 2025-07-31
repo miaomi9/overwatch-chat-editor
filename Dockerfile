@@ -38,7 +38,7 @@ RUN npm run build
 EXPOSE 3000
 
 # 创建启动脚本
-RUN printf '#!/bin/sh\n\n# 等待数据库连接\necho "等待数据库连接..."\nuntil npx prisma db push --accept-data-loss 2>/dev/null; do\n  echo "数据库连接失败，5秒后重试..."\n  sleep 5\ndone\n\necho "数据库连接成功，启动应用..."\nexec npm start\n' > /app/start.sh && chmod +x /app/start.sh
+RUN printf '#!/bin/sh\n\n# 等待数据库连接\necho "等待数据库连接..."\nuntil npx prisma db push --accept-data-loss 2>/dev/null; do\n  echo "数据库连接失败，5秒后重试..."\n  sleep 5\ndone\necho "数据库连接成功"\n\n# 检查Redis连接（如果配置了Redis URL）\nif [ -n "$REDIS_URL" ] && [ "$REDIS_URL" != "" ]; then\n  echo "检查Redis连接..."\n  # 使用node检查Redis连接\n  node -e "\n    const Redis = require(\'ioredis\');\n    const redis = new Redis(process.env.REDIS_URL);\n    redis.ping().then(() => {\n      console.log(\'Redis连接成功\');\n      redis.quit();\n      process.exit(0);\n    }).catch((err) => {\n      console.error(\'Redis连接失败:\', err.message);\n      process.exit(1);\n    });\n  " || {\n    echo "Redis连接失败，但继续启动应用（Redis为可选服务）"\n  }\nelse\n  echo "未配置Redis URL，跳过Redis连接检查"\nfi\n\necho "启动应用..."\nexec npm start\n' > /app/start.sh && chmod +x /app/start.sh
 
 # 启动应用
 CMD ["/bin/sh", "/app/start.sh"]
