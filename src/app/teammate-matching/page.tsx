@@ -638,7 +638,10 @@ const TeammateMatching: React.FC = () => {
                       type="text"
                       value={battleTag}
                       onChange={(e) => {
-                        setBattleTag(e.target.value);
+                        let value = e.target.value;
+                        // 自动将中文井号转换为英文井号（处理多种可能的中文井号字符）
+                        value = value.replace(/[＃﹟♯]/g, '#');
+                        setBattleTag(value);
                         if (error) setError(''); // 清除错误提示
                       }}
                       onKeyPress={(e) => {
