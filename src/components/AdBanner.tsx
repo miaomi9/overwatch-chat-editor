@@ -111,7 +111,7 @@ const AdBanner: React.FC<AdBannerProps> = ({ className = '' }) => {
           <p className="text-gray-300 text-xs leading-relaxed max-sm:text-[10px] max-sm:leading-tight">
             {currentAd === 'wechat'
               ? '扫码关注微信公众号，获取最新功能更新和使用技巧'
-              : '群号：74723044 扫码加入QQ交流群'
+              : '群号：747232044 扫码加入QQ交流群'
             }
           </p>
         </div>
