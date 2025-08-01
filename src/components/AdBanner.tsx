@@ -93,7 +93,7 @@ const AdBanner: React.FC<AdBannerProps> = ({ className = '' }) => {
         <div className={`relative overflow-hidden rounded-lg border border-gray-600/30 ${isMinimized ? 'max-sm:hidden' : ''}`}>
           <div className={`flex justify-center items-center ${currentAd === 'qq' ? 'min-h-[280px]' : 'min-h-[240px]'}`}>
             <Image
-              src={currentAd === 'wechat' ? '/ad/公众号.jpg' : '/ad/qq群.jpg'}
+              src={currentAd === 'wechat' ? '/ad/公众号.jpg' : '/ad/q群.jpg'}
               alt={currentAd === 'wechat' ? '微信公众号二维码' : 'QQ群二维码'}
               width={240}
               height={currentAd === 'qq' ? 280 : 240}
@@ -111,7 +111,7 @@ const AdBanner: React.FC<AdBannerProps> = ({ className = '' }) => {
           <p className="text-gray-300 text-xs leading-relaxed max-sm:text-[10px] max-sm:leading-tight">
             {currentAd === 'wechat'
               ? '扫码关注微信公众号，获取最新功能更新和使用技巧'
-              : '扫码加入QQ交流群，与其他玩家交流心得和建议'
+              : '群号：74723044 扫码加入QQ交流群'
             }
           </p>
         </div>
