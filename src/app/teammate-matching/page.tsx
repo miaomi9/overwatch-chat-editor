@@ -5,6 +5,7 @@ import Image from 'next/image';
 import TermsModal from '@/components/TermsModal';
 import { AppreciationButton } from '@/components/AppreciationModal';
 import Toast from '@/components/Toast';
+import AdBanner from '@/components/AdBanner';
 import i18nTexts from '@/data/teammate-matching-i18n.json';
 import {
   HomeIcon,
@@ -1122,6 +1123,7 @@ const TeammateMatching: React.FC = () => {
         )}
       </div>
     </div>
+    <AdBanner />
     </>
   );
 };

@@ -10,6 +10,7 @@ import { createApiThrottle, createDebounce } from '@/utils/debounceThrottle';
 import UserTemplateUpload from '@/components/UserTemplateUpload';
 import FavoriteTemplates from '@/components/FavoriteTemplates';
 import { AppreciationButton } from '@/components/AppreciationModal';
+import AdBanner from '@/components/AdBanner';
 
 // 动态导入组件
 const TemplateDetailModal = dynamic(
@@ -766,6 +767,7 @@ const CommunityTemplatesPage: React.FC = () => {
         isLiked={selectedTemplate ? likedTemplates.has(selectedTemplate.id) : false}
         templatePreview={selectedTemplate ? templatePreviews[selectedTemplate.id] || [] : []}
       />
+      <AdBanner />
     </div>
   );
 };

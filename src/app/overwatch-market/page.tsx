@@ -11,6 +11,7 @@ import ActionTypeFilter from '@/components/ActionTypeFilter';
 import AddExchangeModal from '@/components/AddExchangeModal';
 import AnnouncementCarousel from '@/components/AnnouncementCarousel';
 import { AppreciationButton } from '@/components/AppreciationModal';
+import AdBanner from '@/components/AdBanner';
 import { PlusIcon, ArrowPathIcon, ExclamationTriangleIcon, CheckIcon, ArrowLeftIcon, ArrowRightIcon, SparklesIcon, HomeIcon, UserGroupIcon } from '@heroicons/react/24/outline';
 
 interface CardExchange {
@@ -504,6 +505,7 @@ export default function OverwatchMarketPage() {
          onSubmit={throttledSubmit}
          isSubmitting={submitting}
        />
+       <AdBanner />
     </div>
   );
 }
