@@ -19,6 +19,14 @@ function validateTxcCode(txcCode: string): boolean {
 
 // 获取纹理贡献列表（管理员用）
 export async function GET(request: NextRequest) {
+  // 生产环境禁止访问
+  if (process.env.NODE_ENV === 'production') {
+    return NextResponse.json(
+      { error: '生产环境不允许此操作' },
+      { status: 403 }
+    );
+  }
+  
   try {
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get('page') || '1');

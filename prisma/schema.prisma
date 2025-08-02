@@ -99,3 +99,15 @@ model TeammateMatchRecord {
   
   @@map("teammate_match_records")
 }
+
+model Hero {
+  id          String   @id @default(cuid())
+  name        String   // 英雄中文名称
+  englishName String   @unique // 英雄英文名称
+  avatar      String?  // 头像文件路径
+  extensions  Json?    // 扩展字段（保留的）
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@map("heroes")
+}

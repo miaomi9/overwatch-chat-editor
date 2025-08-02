@@ -21,6 +21,14 @@ export async function GET() {
 
 // 更新纹理数据
 export async function POST(request: NextRequest) {
+  // 生产环境禁止访问
+  if (process.env.NODE_ENV === 'production') {
+    return NextResponse.json(
+      { error: '生产环境不允许此操作' },
+      { status: 403 }
+    );
+  }
+  
   try {
     const { textureId, name, category } = await request.json();
     
@@ -66,6 +74,14 @@ export async function POST(request: NextRequest) {
 
 // 批量更新纹理数据
 export async function PUT(request: NextRequest) {
+  // 生产环境禁止访问
+  if (process.env.NODE_ENV === 'production') {
+    return NextResponse.json(
+      { error: '生产环境不允许此操作' },
+      { status: 403 }
+    );
+  }
+  
   try {
     const { textures, categories } = await request.json();
     

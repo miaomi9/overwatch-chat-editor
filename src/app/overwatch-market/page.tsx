@@ -238,21 +238,22 @@ export default function OverwatchMarketPage() {
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white">
       <div className="container mx-auto px-4 py-6 lg:py-8 max-w-7xl">
         {/* 导航链接 */}
-        <div className="flex items-center justify-between mb-6 lg:mb-8">
-          <div className="flex items-center gap-4">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 mb-6 lg:mb-8">
+          {/* 移动端：2x2网格布局，桌面端：水平排列 */}
+          <div className="grid grid-cols-2 gap-2 sm:flex sm:items-center sm:gap-2 lg:gap-3 sm:flex-1 sm:min-w-0">
             <Link
               href="/"
-              className="inline-flex items-center gap-2 px-4 py-2 bg-gray-800/50 hover:bg-gray-700/50 text-gray-300 hover:text-white rounded-lg transition-all duration-200 border border-gray-700/50 hover:border-gray-600/50"
+              className="inline-flex items-center justify-center gap-1 sm:gap-1.5 px-3 py-2 bg-gray-800/50 hover:bg-gray-700/50 text-gray-300 hover:text-white rounded-lg transition-all duration-200 border border-gray-700/50 hover:border-gray-600/50 text-xs sm:text-sm whitespace-nowrap"
             >
-              <HomeIcon className="h-4 w-4" />
+              <HomeIcon className="h-3 w-3 sm:h-4 sm:w-4" />
               <span className="hidden sm:inline">返回编辑器</span>
               <span className="sm:hidden">编辑器</span>
             </Link>
             <Link
               href="/teammate-matching"
-              className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600/20 hover:bg-blue-600/30 text-blue-300 hover:text-blue-200 rounded-lg transition-all duration-200 border border-blue-500/30 hover:border-blue-400/50"
+              className="inline-flex items-center justify-center gap-1 sm:gap-1.5 px-3 py-2 bg-blue-600/20 hover:bg-blue-600/30 text-blue-300 hover:text-blue-200 rounded-lg transition-all duration-200 border border-blue-500/30 hover:border-blue-400/50 text-xs sm:text-sm whitespace-nowrap"
             >
-              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="h-3 w-3 sm:h-4 sm:w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
               </svg>
               <span className="hidden sm:inline">队友匹配</span>
@@ -260,14 +261,17 @@ export default function OverwatchMarketPage() {
             </Link>
             <Link
               href="/community-templates"
-              className="inline-flex items-center gap-2 px-4 py-2 bg-gray-800/50 hover:bg-gray-700/50 text-gray-300 hover:text-white rounded-lg transition-all duration-200 border border-gray-700/50 hover:border-gray-600/50"
+              className="inline-flex items-center justify-center gap-1 sm:gap-1.5 px-3 py-2 bg-gray-800/50 hover:bg-gray-700/50 text-gray-300 hover:text-white rounded-lg transition-all duration-200 border border-gray-700/50 hover:border-gray-600/50 text-xs sm:text-sm whitespace-nowrap"
             >
-              <UserGroupIcon className="h-4 w-4" />
+              <UserGroupIcon className="h-3 w-3 sm:h-4 sm:w-4" />
               <span className="hidden sm:inline">社区模板</span>
               <span className="sm:hidden">模板</span>
             </Link>
+            <div className="sm:hidden">
+              <AppreciationButton className="text-xs px-3 py-2" />
+            </div>
           </div>
-          <div className="flex items-center">
+          <div className="hidden sm:flex items-center flex-shrink-0">
             <AppreciationButton className="text-sm" />
           </div>
         </div>

@@ -50,6 +50,14 @@ export async function GET() {
 
 // 创建新模板
 export async function POST(request: NextRequest) {
+  // 生产环境禁止访问
+  if (process.env.NODE_ENV === 'production') {
+    return NextResponse.json(
+      { error: '生产环境不允许此操作' },
+      { status: 403 }
+    );
+  }
+  
   try {
     const { name, description, elements, category } = await request.json();
     
@@ -128,6 +136,14 @@ export async function POST(request: NextRequest) {
 
 // 更新模板
 export async function PUT(request: NextRequest) {
+  // 生产环境禁止访问
+  if (process.env.NODE_ENV === 'production') {
+    return NextResponse.json(
+      { error: '生产环境不允许此操作' },
+      { status: 403 }
+    );
+  }
+  
   try {
     const { id, name, description, elements, category } = await request.json();
     
@@ -208,6 +224,14 @@ export async function PUT(request: NextRequest) {
 
 // 删除模板
 export async function DELETE(request: NextRequest) {
+  // 生产环境禁止访问
+  if (process.env.NODE_ENV === 'production') {
+    return NextResponse.json(
+      { error: '生产环境不允许此操作' },
+      { status: 403 }
+    );
+  }
+  
   try {
     const { searchParams } = new URL(request.url);
     const templateId = searchParams.get('id');

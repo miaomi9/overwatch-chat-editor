@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import TemplateManager from '@/components/TemplateManager';
+import HeroManager from '@/components/HeroManager';
 import Toast from '@/components/Toast';
 import { useToast } from '@/hooks/useToast';
 import { getTextureName, clearTextureDataCache } from '@/data/textureNames';
@@ -178,7 +179,7 @@ const EditModal: React.FC<EditModalProps> = ({ texture, categories, onSave, onCl
 };
 
 const AdminPage: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'textures' | 'templates'>('textures');
+  const [activeTab, setActiveTab] = useState<'textures' | 'templates' | 'heroes'>('textures');
   const [textures, setTextures] = useState<Texture[]>([]);
   const [textureData, setTextureData] = useState<TextureData>({ textures: {}, categories: [] });
   const [loading, setLoading] = useState(true);
@@ -348,6 +349,16 @@ const AdminPage: React.FC = () => {
             >
               模板管理
             </button>
+            <button
+              onClick={() => setActiveTab('heroes')}
+              className={`px-6 py-3 text-sm font-medium transition-all duration-200 border-b-2 ${
+                activeTab === 'heroes'
+                  ? 'border-blue-500 text-blue-600 bg-blue-50'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+              }`}
+            >
+              英雄管理
+            </button>
           </div>
         </div>
         
@@ -506,6 +517,11 @@ const AdminPage: React.FC = () => {
         {/* 模板管理 */}
         {activeTab === 'templates' && (
           <TemplateManager />
+        )}
+
+        {/* 英雄管理 */}
+        {activeTab === 'heroes' && (
+          <HeroManager />
         )}
       </div>
 

@@ -342,43 +342,59 @@ const CommunityTemplatesPage: React.FC = () => {
       {/* 页面头部 */}
       <div className="bg-gray-900/80 backdrop-blur-sm border-b border-gray-700">
         <div className="max-w-7xl mx-auto px-4 py-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold bg-gradient-to-r from-orange-400 to-orange-600 bg-clip-text text-transparent">
-                社区模板
-              </h1>
-              <p className="text-gray-400 mt-2">发现和分享优秀的守望先锋聊天模板</p>
-            </div>
-            <div className="flex items-center gap-3">
-              <div className="w-48">
-                <UserTemplateUpload onUploadSuccess={() => fetchTemplates(true)} />
+          {/* 标题和功能按钮横向排列 */}
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            {/* 左侧：标题和描述 */}
+             <div className="flex-1">
+               <div className="flex items-center gap-3 mb-2">
+                 <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{backgroundImage: 'url("https://ld5.res.netease.com/images/20241213/1734074185668_1f8923e771.svg")', backgroundSize: 'contain', backgroundRepeat: 'no-repeat', backgroundPosition: 'center'}}>
+                 </div>
+                 <h1 className="text-3xl lg:text-4xl font-bold bg-gradient-to-r from-orange-400 to-orange-600 bg-clip-text text-transparent">
+                   社区模板
+                 </h1>
+               </div>
+               <p className="text-gray-400">发现和分享优秀的守望先锋聊天模板</p>
+             </div>
+            
+            {/* 右侧：功能按钮 */}
+            <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
+              {/* 移动端：2x2网格布局，桌面端：水平排列 */}
+              <div className="grid grid-cols-2 gap-2 sm:flex sm:items-center sm:gap-2">
+                <button
+                  onClick={() => router.push('/teammate-matching')}
+                  className="flex items-center justify-center gap-1 px-3 py-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all duration-200 text-xs sm:text-sm"
+                >
+                  <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                  </svg>
+                  <span className="hidden sm:inline">队友匹配</span>
+                  <span className="sm:hidden">队友</span>
+                </button>
+                <button
+                  onClick={() => router.push('/overwatch-market')}
+                  className="flex items-center justify-center gap-1 px-3 py-2 bg-gradient-to-r from-purple-600 to-purple-700 text-white rounded-lg hover:from-purple-700 hover:to-purple-800 transition-all duration-200 text-xs sm:text-sm"
+                >
+                  <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                  </svg>
+                  <span className="hidden sm:inline">卡片交换</span>
+                  <span className="sm:hidden">卡片</span>
+                </button>
+                <button
+                  onClick={() => router.push('/')}
+                  className="px-3 py-2 bg-gray-700 text-gray-300 rounded-lg hover:bg-gray-600 transition-colors duration-200 text-xs sm:text-sm"
+                >
+                  <span className="hidden sm:inline">返回编辑器</span>
+                  <span className="sm:hidden">编辑器</span>
+                </button>
+                <AppreciationButton className="text-xs sm:text-sm px-3 py-2" />
               </div>
-               <AppreciationButton className="text-sm" />
-              <button
-                onClick={() => router.push('/teammate-matching')}
-                className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all duration-200"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                </svg>
-                队友匹配
-              </button>
-              <button
-                onClick={() => router.push('/overwatch-market')}
-                className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-purple-700 text-white rounded-lg hover:from-purple-700 hover:to-purple-800 transition-all duration-200"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-                </svg>
-                卡片交换
-              </button>
-              <button
-                onClick={() => router.push('/')}
-                className="px-4 py-2 bg-gray-700 text-gray-300 rounded-lg hover:bg-gray-600 transition-colors duration-200"
-              >
-                返回编辑器
-              </button>
             </div>
+          </div>
+          
+          {/* 分享模板按钮 */}
+          <div className="mt-6">
+            <UserTemplateUpload onUploadSuccess={() => fetchTemplates(true)} />
           </div>
         </div>
       </div>
@@ -447,15 +463,15 @@ const CommunityTemplatesPage: React.FC = () => {
           </div>
 
           {/* 分类筛选和排序控制 */}
-          <div className="flex items-center justify-between gap-4">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             {/* 分类筛选 */}
             <div className="relative">
-              <div className="flex items-center gap-4">
-                <label className="text-gray-300 text-sm font-medium">分类筛选:</label>
+              <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+                <label className="text-gray-300 text-sm font-medium whitespace-nowrap">分类筛选:</label>
                 <div className="relative category-filter-dropdown">
                    <button
                      onClick={() => setShowCategoryFilter(!showCategoryFilter)}
-                     className="flex items-center gap-2 px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white hover:bg-gray-600 transition-all duration-200 min-w-[180px] justify-between"
+                     className="flex items-center gap-2 px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white hover:bg-gray-600 transition-all duration-200 w-full sm:min-w-[180px] sm:w-auto justify-between"
                    >
                     <span className="text-sm">
                       {selectedCategory ? 
@@ -469,7 +485,7 @@ const CommunityTemplatesPage: React.FC = () => {
                   </button>
                   
                   {showCategoryFilter && (
-                    <div className="absolute top-full left-0 mt-2 w-80 bg-gray-800 border border-gray-600 rounded-lg shadow-xl z-50 max-h-96 overflow-hidden">
+                    <div className="absolute top-full left-0 mt-2 w-full sm:w-80 bg-gray-800 border border-gray-600 rounded-lg shadow-xl z-50 max-h-96 overflow-hidden">
                       <div className="p-3">
                         {/* 搜索框 */}
                         <div className="mb-3">
@@ -544,21 +560,23 @@ const CommunityTemplatesPage: React.FC = () => {
             </div>
 
             {/* 排序控制 */}
-            <div className="flex items-center gap-4">
-              <label className="text-gray-300 text-sm font-medium">排序:</label>
-              <select
-                value={sortBy}
-                onChange={(e) => {
-                  setSortBy(e.target.value as 'createdAt' | 'likesCount');
-                }}
-                className="px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-              >
-                <option value="likesCount">按点赞数排序</option>
-                <option value="createdAt">按时间排序</option>
-              </select>
-              
-              <div className="text-sm text-gray-400">
-                共 {totalTemplates} 个模板
+            <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+              <label className="text-gray-300 text-sm font-medium whitespace-nowrap">排序:</label>
+              <div className="flex items-center gap-4">
+                <select
+                  value={sortBy}
+                  onChange={(e) => {
+                    setSortBy(e.target.value as 'createdAt' | 'likesCount');
+                  }}
+                  className="px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent text-sm"
+                >
+                  <option value="likesCount">按点赞数排序</option>
+                  <option value="createdAt">按时间排序</option>
+                </select>
+                
+                <div className="text-sm text-gray-400 whitespace-nowrap">
+                  共 {totalTemplates} 个模板
+                </div>
               </div>
             </div>
           </div>

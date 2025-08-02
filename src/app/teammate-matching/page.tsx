@@ -224,7 +224,8 @@ const TeammateMatching: React.FC = () => {
     }
 
     // 验证战网ID格式 (ABC#5XXX，其中XXX是3-7位数字)
-    const battleTagRegex = /^[\w\u4e00-\u9fa5]+#\d{3,7}$/;
+    // 扩展Unicode范围以支持更多CJK字符，包括扩展A区
+    const battleTagRegex = /^[\w\u3400-\u4dbf\u4e00-\u9fff]+#\d{3,7}$/;
     if (!battleTagRegex.test(battleTag.trim())) {
       setError('战网ID格式不正确，请输入正确格式（例如：Player#12345）');
       return;
