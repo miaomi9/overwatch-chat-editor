@@ -10,6 +10,7 @@ interface Hero {
   name: string;
   englishName: string;
   avatar: string | null;
+  role: string | null;
   extensions: any;
   createdAt: string;
   updatedAt: string;
@@ -19,6 +20,7 @@ interface HeroFormData {
   name: string;
   englishName: string;
   avatar: File | null;
+  role: string;
   extensions: string;
   removeAvatar: boolean;
 }
@@ -32,6 +34,7 @@ const HeroManager: React.FC = () => {
     name: '',
     englishName: '',
     avatar: null,
+    role: '',
     extensions: '',
     removeAvatar: false
   });
@@ -65,6 +68,7 @@ const HeroManager: React.FC = () => {
       name: '',
       englishName: '',
       avatar: null,
+      role: '',
       extensions: '',
       removeAvatar: false
     });
@@ -84,6 +88,7 @@ const HeroManager: React.FC = () => {
       name: hero.name,
       englishName: hero.englishName,
       avatar: null,
+      role: hero.role || '',
       extensions: hero.extensions ? JSON.stringify(hero.extensions, null, 2) : '',
       removeAvatar: false
     });
@@ -105,6 +110,7 @@ const HeroManager: React.FC = () => {
       const formDataToSend = new FormData();
       formDataToSend.append('name', formData.name);
       formDataToSend.append('englishName', formData.englishName);
+      formDataToSend.append('role', formData.role);
       formDataToSend.append('extensions', formData.extensions);
       
       if (editingHero) {
@@ -236,6 +242,20 @@ const HeroManager: React.FC = () => {
                 </div>
                 
                 <div>
+                  <label className="block text-gray-700 text-sm font-medium mb-1">职责</label>
+                  <select
+                    value={formData.role}
+                    onChange={(e) => setFormData(prev => ({ ...prev, role: e.target.value }))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  >
+                    <option value="">请选择职责</option>
+                    <option value="重装">重装</option>
+                    <option value="输出">输出</option>
+                    <option value="支援">支援</option>
+                  </select>
+                </div>
+                
+                <div>
                   <label className="block text-gray-700 text-sm font-medium mb-1">头像</label>
                   <div className="space-y-2">
                     {editingHero?.avatar && !formData.removeAvatar && !formData.avatar && (
@@ -310,6 +330,7 @@ const HeroManager: React.FC = () => {
                   <th className="text-left py-3 px-4 text-gray-700 font-medium">头像</th>
                   <th className="text-left py-3 px-4 text-gray-700 font-medium">中文名称</th>
                   <th className="text-left py-3 px-4 text-gray-700 font-medium">英文名称</th>
+                  <th className="text-left py-3 px-4 text-gray-700 font-medium">职责</th>
                   <th className="text-left py-3 px-4 text-gray-700 font-medium">扩展字段</th>
                   <th className="text-left py-3 px-4 text-gray-700 font-medium">创建时间</th>
                   <th className="text-left py-3 px-4 text-gray-700 font-medium">操作</th>
@@ -331,6 +352,20 @@ const HeroManager: React.FC = () => {
                     </td>
                     <td className="py-3 px-4 text-gray-800 font-medium">{hero.name}</td>
                     <td className="py-3 px-4 text-gray-600">{hero.englishName}</td>
+                    <td className="py-3 px-4">
+                      {hero.role ? (
+                        <span className={`inline-block px-2 py-1 text-xs rounded ${
+                          hero.role === '重装' ? 'bg-blue-100 text-blue-800' :
+                          hero.role === '输出' ? 'bg-red-100 text-red-800' :
+                          hero.role === '支援' ? 'bg-green-100 text-green-800' :
+                          'bg-gray-100 text-gray-800'
+                        }`}>
+                          {hero.role}
+                        </span>
+                      ) : (
+                        <span className="text-gray-400">未设置</span>
+                      )}
+                    </td>
                     <td className="py-3 px-4">
                       {hero.extensions ? (
                         <span className="inline-block px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded border border-blue-200">

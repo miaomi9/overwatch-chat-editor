@@ -105,9 +105,53 @@ model Hero {
   name        String   // 英雄中文名称
   englishName String   @unique // 英雄英文名称
   avatar      String?  // 头像文件路径
+  role        String?  // 职责：重装、输出、支援
   extensions  Json?    // 扩展字段（保留的）
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   
+  // 关联关系
+  talents     HeroTalent[]
+  resources   HeroResource[]
+  
   @@map("heroes")
+}
+
+model HeroTalent {
+  id          String   @id @default(cuid())
+  name        String   // 技能名称
+  type        String   // 技能类型: weapon/skill/survival/ability
+  icon        String?  // 技能图标文件路径
+  cost        Int?     // 花费（异能类型为null）
+  description String   @db.Text // 技能介绍
+  heroId      String   // 所属英雄ID
+  isActive    Boolean  @default(true) // 是否启用
+  displayOrder Int     @default(0) // 显示顺序
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // 关联关系
+  hero        Hero     @relation(fields: [heroId], references: [id], onDelete: Cascade)
+  
+  @@map("hero_talents")
+}
+
+model HeroResource {
+  id          String   @id @default(cuid())
+  heroId      String   // 所属英雄ID
+  name        String   // 资源名称
+  description String?  // 资源描述
+  resourceType String  // 资源类型: image/video/audio/document
+  filePath    String   // 文件路径
+  fileSize    Int?     // 文件大小（字节）
+  mimeType    String?  // MIME类型
+  displayOrder Int     @default(0) // 显示顺序
+  isActive    Boolean  @default(true) // 是否启用
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // 关联关系
+  hero        Hero     @relation(fields: [heroId], references: [id], onDelete: Cascade)
+  
+  @@map("hero_resources")
 }

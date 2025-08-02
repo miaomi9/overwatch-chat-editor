@@ -5,6 +5,7 @@ import { useGlobalToast } from '@/contexts/ToastContext';
 import { parseOverwatchCode } from '@/utils/overwatchCodeParser';
 import { loadTexturesWithCache, type Texture } from '@/utils/textureCache';
 import { createDebounce } from '@/utils/debounceThrottle';
+import TemplateImageExporter from './TemplateImageExporter';
 
 interface UserTemplate {
   id: string;
@@ -288,6 +289,15 @@ const FavoriteTemplates: React.FC<FavoriteTemplatesProps> = ({
               >
                 复制代码
               </button>
+              <div className="flex-1">
+                <TemplateImageExporter
+                  templateName={template.name}
+                  overwatchCode={template.overwatchCode}
+                  onExportStart={() => showToast('正在生成表情包...', 'info')}
+                  onExportComplete={() => showToast('表情包导出成功！', 'success')}
+                  onExportError={(error) => showToast(`导出失败: ${error}`, 'error')}
+                />
+              </div>
               <button
                 onClick={() => onShowDetails(template)}
                 className="px-3 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors duration-200 text-sm font-medium"

@@ -14,7 +14,7 @@ export async function GET() {
       }
     });
     
-    return NextResponse.json({ heroes });
+    return NextResponse.json(heroes);
   } catch (error) {
     console.error('Error fetching heroes:', error);
     return NextResponse.json(
@@ -38,6 +38,7 @@ export async function POST(request: NextRequest) {
     const formData = await request.formData();
     const name = formData.get('name') as string;
     const englishName = formData.get('englishName') as string;
+    const role = formData.get('role') as string;
     const avatar = formData.get('avatar') as File | null;
     const extensions = formData.get('extensions') as string;
     
@@ -96,6 +97,7 @@ export async function POST(request: NextRequest) {
       data: {
         name,
         englishName,
+        role: role || null,
         avatar: avatarPath,
         extensions: parsedExtensions
       }
@@ -126,6 +128,7 @@ export async function PUT(request: NextRequest) {
     const id = formData.get('id') as string;
     const name = formData.get('name') as string;
     const englishName = formData.get('englishName') as string;
+    const role = formData.get('role') as string;
     const avatar = formData.get('avatar') as File | null;
     const extensions = formData.get('extensions') as string;
     const removeAvatar = formData.get('removeAvatar') === 'true';
@@ -221,6 +224,7 @@ export async function PUT(request: NextRequest) {
       data: {
         name,
         englishName,
+        role: role || null,
         avatar: avatarPath,
         extensions: parsedExtensions
       }

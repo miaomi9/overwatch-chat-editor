@@ -4,6 +4,8 @@ import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import TemplateManager from '@/components/TemplateManager';
 import HeroManager from '@/components/HeroManager';
+import HeroTalentManager from '@/components/HeroTalentManager';
+import HeroResourceManager from '@/components/HeroResourceManager';
 import Toast from '@/components/Toast';
 import { useToast } from '@/hooks/useToast';
 import { getTextureName, clearTextureDataCache } from '@/data/textureNames';
@@ -179,7 +181,7 @@ const EditModal: React.FC<EditModalProps> = ({ texture, categories, onSave, onCl
 };
 
 const AdminPage: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'textures' | 'templates' | 'heroes'>('textures');
+  const [activeTab, setActiveTab] = useState<'textures' | 'templates' | 'heroes' | 'talents' | 'resources'>('textures');
   const [textures, setTextures] = useState<Texture[]>([]);
   const [textureData, setTextureData] = useState<TextureData>({ textures: {}, categories: [] });
   const [loading, setLoading] = useState(true);
@@ -359,6 +361,26 @@ const AdminPage: React.FC = () => {
             >
               英雄管理
             </button>
+            <button
+              onClick={() => setActiveTab('talents')}
+              className={`px-6 py-3 text-sm font-medium transition-all duration-200 border-b-2 ${
+                activeTab === 'talents'
+                  ? 'border-blue-500 text-blue-600 bg-blue-50'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+              }`}
+            >
+              天赋管理
+            </button>
+            <button
+              onClick={() => setActiveTab('resources')}
+              className={`px-6 py-3 text-sm font-medium transition-all duration-200 border-b-2 ${
+                activeTab === 'resources'
+                  ? 'border-blue-500 text-blue-600 bg-blue-50'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+              }`}
+            >
+              资源管理
+            </button>
           </div>
         </div>
         
@@ -522,6 +544,16 @@ const AdminPage: React.FC = () => {
         {/* 英雄管理 */}
         {activeTab === 'heroes' && (
           <HeroManager />
+        )}
+
+        {/* 英雄天赋管理 */}
+        {activeTab === 'talents' && (
+          <HeroTalentManager />
+        )}
+
+        {/* 英雄资源管理 */}
+        {activeTab === 'resources' && (
+          <HeroResourceManager />
         )}
       </div>
 

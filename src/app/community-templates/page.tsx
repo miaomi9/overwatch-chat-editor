@@ -11,6 +11,8 @@ import UserTemplateUpload from '@/components/UserTemplateUpload';
 import FavoriteTemplates from '@/components/FavoriteTemplates';
 import { AppreciationButton } from '@/components/AppreciationModal';
 import AdBanner from '@/components/AdBanner';
+import TemplateImageExporter from '@/components/TemplateImageExporter';
+import CommunityTemplateTermsModal from '@/components/CommunityTemplateTermsModal';
 
 // 动态导入组件
 const TemplateDetailModal = dynamic(
@@ -70,15 +72,24 @@ const CommunityTemplatesPage: React.FC = () => {
   const [textures, setTextures] = useState<Texture[]>([]);
   const [selectedTemplate, setSelectedTemplate] = useState<UserTemplate | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [showTermsModal, setShowTermsModal] = useState(false);
   const { showToast } = useGlobalToast();
 
   // 从localStorage加载收藏列表
   useEffect(() => {
     const savedFavorites = JSON.parse(localStorage.getItem('favoriteTemplates') || '[]');
     setFavoriteTemplates(new Set(savedFavorites));
+    
+    // 每次进入页面都显示条约
+    setShowTermsModal(true);
   }, []);
 
   const limit = 12; // 增加每页显示数量
+
+  // 处理用户同意条约
+  const handleAcceptTerms = () => {
+    setShowTermsModal(false);
+  };
 
   // 加载纹理数据和分类数据
   useEffect(() => {
@@ -717,6 +728,15 @@ const CommunityTemplatesPage: React.FC = () => {
                     >
                       复制
                     </button>
+                    <div className="flex-1">
+                      <TemplateImageExporter
+                        templateName={template.name}
+                        overwatchCode={template.overwatchCode}
+                        onExportStart={() => showToast('正在生成表情包...', 'info')}
+                        onExportComplete={() => showToast('表情包导出成功！', 'success')}
+                        onExportError={(error) => showToast(`导出失败: ${error}`, 'error')}
+                      />
+                    </div>
                     <button
                       onClick={() => handleShowDetails(template)}
                       className="flex-1 px-3 py-2 text-sm bg-gradient-to-r from-orange-600 to-orange-700 text-white rounded hover:from-orange-500 hover:to-orange-600 transition-all duration-200 font-semibold"
@@ -784,6 +804,12 @@ const CommunityTemplatesPage: React.FC = () => {
         onLike={handleLike}
         isLiked={selectedTemplate ? likedTemplates.has(selectedTemplate.id) : false}
         templatePreview={selectedTemplate ? templatePreviews[selectedTemplate.id] || [] : []}
+      />
+
+      {/* 社区模板使用条约模态框 */}
+      <CommunityTemplateTermsModal
+        isOpen={showTermsModal}
+        onAccept={handleAcceptTerms}
       />
       <AdBanner />
     </div>
