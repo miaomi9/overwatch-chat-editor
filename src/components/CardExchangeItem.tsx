@@ -336,21 +336,7 @@ export default function CardExchangeItem({ exchange, onStatusUpdate, showToast, 
               <span className="font-medium hidden sm:inline">可用</span>
             </div>
             
-            {exchange.status === 'active' && (
-               <button
-                 onClick={handleReportUsed}
-                 disabled={isChecking}
-                 className="px-2 py-1 bg-gradient-to-r from-red-600/90 to-red-700/90 text-white rounded-lg text-xs hover:from-red-500 hover:to-red-600 transition-all duration-300 flex items-center gap-1 hover:scale-105 font-semibold shadow-lg hover:shadow-red-500/25 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 whitespace-nowrap"
-                 title="如果卡片已失效，点击上报帮助其他用户"
-               >
-                 {isChecking ? (
-                   <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white"></div>
-                 ) : (
-                   <ExclamationTriangleIcon className="h-3 w-3" />
-                 )}
-                 <span className="text-xs">{isChecking ? '上报中' : '上报已使用'}</span>
-               </button>
-             )}
+
           </div>
         </div>
         {/* 【优化方案第三阶段】移除复制功能，改为跳转机制收集用户行为数据 */}
@@ -402,6 +388,26 @@ export default function CardExchangeItem({ exchange, onStatusUpdate, showToast, 
               </>
             )}
           </button>
+          
+          {exchange.status === 'active' && (
+            <button
+              onClick={handleReportUsed}
+              disabled={isChecking}
+              className="px-3 sm:px-4 py-2 sm:py-2.5 bg-gradient-to-r from-red-600/90 to-red-700/90 text-white rounded-lg sm:rounded-xl text-xs sm:text-sm hover:from-red-500 hover:to-red-600 transition-all duration-300 flex items-center gap-1.5 sm:gap-2 hover:scale-105 font-semibold shadow-lg hover:shadow-red-500/25 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 whitespace-nowrap"
+              title={exchange.actionType === 'ask' ? '如果赠送无效，点击上报帮助其他用户' : '如果交换无效，点击上报帮助其他用户'}
+            >
+              {isChecking ? (
+                <div className="animate-spin rounded-full h-3 w-3 sm:h-4 sm:w-4 border-b-2 border-white"></div>
+              ) : (
+                <ExclamationTriangleIcon className="h-3 w-3 sm:h-4 sm:w-4" />
+              )}
+              <span className="text-xs sm:text-sm">
+                {isChecking ? '上报中' : (
+                  exchange.actionType === 'ask' ? '赠送无效' : '交换无效'
+                )}
+              </span>
+            </button>
+          )}
         </div>
       </div>
     </div>
