@@ -11,7 +11,7 @@ const reportUsedLimiter = createRateLimit({
   message: '上报过于频繁，请稍后再试。每小时最多可上报50次。',
 });
 
-export async function POST(request: NextRequest, { params }: { params: { id: string } }) {
+export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     // 速率限制检查
     const rateLimitResult = await reportUsedLimiter(request);
@@ -28,7 +28,7 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
       );
     }
 
-    const cardId = params.id;
+    const { id: cardId } = await params;
     
     // 获取客户端IP
     const forwarded = request.headers.get('x-forwarded-for');
