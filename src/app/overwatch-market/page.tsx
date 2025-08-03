@@ -256,9 +256,10 @@ export default function OverwatchMarketPage() {
               <span className="hidden sm:inline">社区模板</span>
               <span className="sm:hidden">模板</span>
             </Link>
-            <div className="sm:hidden">
-              <AppreciationButton className="text-xs px-3 py-2" />
-            </div>
+            <AppreciationButton 
+              variant="custom"
+              className="sm:hidden inline-flex items-center justify-center gap-1 sm:gap-1.5 px-3 py-2 bg-gray-800/50 hover:bg-gray-700/50 text-gray-300 hover:text-white rounded-lg transition-all duration-200 border border-gray-700/50 hover:border-gray-600/50 text-xs sm:text-sm whitespace-nowrap" 
+            />
           </div>
           <div className="hidden sm:flex items-center flex-shrink-0">
             <AppreciationButton className="text-sm" />

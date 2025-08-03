@@ -62,10 +62,27 @@ function SimpleCardSelector({ title, selectedCardId, onCardChange, placeholder, 
   useEffect(() => {
     if (isOpen && buttonRef.current) {
       const rect = buttonRef.current.getBoundingClientRect();
+      const viewportWidth = window.innerWidth;
+      const maxWidth = Math.min(viewportWidth - 32, 400); // 最大宽度不超过视口宽度减去边距
+      
+      // 确保下拉菜单与按钮左对齐，同时不超出屏幕边界
+      let left = rect.left + window.scrollX;
+      const width = Math.max(rect.width, Math.min(maxWidth, 320));
+      
+      // 如果下拉菜单会超出右边界，则向左调整
+      if (left + width > viewportWidth - 16) {
+        left = viewportWidth - width - 16;
+      }
+      
+      // 确保不超出左边界
+      if (left < 16) {
+        left = 16;
+      }
+      
       setDropdownPosition({
         top: rect.bottom + window.scrollY + 4,
-        left: rect.left + window.scrollX,
-        width: Math.max(rect.width, 400)
+        left: left,
+        width: width
       });
     }
   }, [isOpen]);
@@ -100,7 +117,7 @@ function SimpleCardSelector({ title, selectedCardId, onCardChange, placeholder, 
 
   const dropdownContent = (
     <div 
-      className="bg-gray-800/95 border border-gray-600/50 rounded-lg shadow-2xl overflow-hidden backdrop-blur-md"
+      className="bg-gray-800/95 border border-gray-600/50 rounded-lg shadow-2xl overflow-hidden backdrop-blur-md max-w-[calc(100vw-32px)]"
       style={{
         position: 'absolute',
         top: dropdownPosition.top,
@@ -112,7 +129,7 @@ function SimpleCardSelector({ title, selectedCardId, onCardChange, placeholder, 
       {/* 赛区快速选择 */}
       <div className="p-3 border-b border-gray-700/50">
         <div className="text-xs font-medium text-gray-400 mb-2">选择赛区</div>
-        <div className="grid grid-cols-5 gap-1">
+        <div className="grid grid-cols-3 sm:grid-cols-5 gap-1">
           {Object.entries(regions).map(([key, region]) => (
             <button
               key={key}
@@ -177,7 +194,7 @@ function SimpleCardSelector({ title, selectedCardId, onCardChange, placeholder, 
       
       {/* 卡片网格 */}
       <div className="max-h-48 overflow-y-auto p-2">
-        <div className="grid grid-cols-6 gap-1">
+        <div className="grid grid-cols-4 sm:grid-cols-5 lg:grid-cols-6 gap-1">
           {filteredCards.map(cardId => {
             const card = getCardRegionAndNumber(cardId);
             return (

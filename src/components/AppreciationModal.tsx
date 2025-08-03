@@ -97,21 +97,37 @@ const AppreciationModal: React.FC = () => {
 // 触发按钮组件
 interface AppreciationButtonProps {
   className?: string;
+  variant?: 'default' | 'custom';
 }
 
-export const AppreciationButton: React.FC<AppreciationButtonProps> = ({ className = '' }) => {
+export const AppreciationButton: React.FC<AppreciationButtonProps> = ({ className = '', variant = 'default' }) => {
   const { openModal } = useAppreciation();
+
+  const defaultClasses = "flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-pink-600/20 to-pink-700/20 border border-pink-500/30 rounded-lg hover:from-pink-600/30 hover:to-pink-700/30 hover:border-pink-400/50 transition-all duration-200 group";
+  
+  const buttonClasses = variant === 'custom' ? className : `${defaultClasses} ${className}`;
 
   return (
     <button
       onClick={openModal}
-      className={`flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-pink-600/20 to-pink-700/20 border border-pink-500/30 rounded-lg hover:from-pink-600/30 hover:to-pink-700/30 hover:border-pink-400/50 transition-all duration-200 group ${className}`}
+      className={buttonClasses}
     >
-      <span className="text-lg">💖</span>
-      <span className="text-white text-sm font-medium">赞赏支持</span>
-      <svg className="w-4 h-4 text-pink-400 transform group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-      </svg>
+      {variant === 'default' && <span className="text-lg">💖</span>}
+      {variant === 'custom' && <span className="text-sm sm:text-lg">💖</span>}
+      {variant === 'default' && (
+        <>
+          <span className="text-white text-sm font-medium">赞赏支持</span>
+          <svg className="w-4 h-4 text-pink-400 transform group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+          </svg>
+        </>
+      )}
+      {variant === 'custom' && (
+        <>
+          <span className="hidden sm:inline text-white text-sm font-medium">赞赏支持</span>
+          <span className="sm:hidden text-white text-xs font-medium">赞赏</span>
+        </>
+      )}
     </button>
   );
 };
