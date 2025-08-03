@@ -32,6 +32,7 @@ interface CardExchangeItemProps {
   onStatusUpdate?: (id: string, newStatus: string) => void;
   showToast?: (message: string, type: 'success' | 'error' | 'warning' | 'info') => void;
   onRefreshPage?: () => void;
+  onCopyUrl?: (url: string) => void;
 }
 
 const ACTION_TYPE_LABELS = {
@@ -106,7 +107,7 @@ const formatDate = (dateString: string): string => {
   }
 };
 
-export default function CardExchangeItem({ exchange, onStatusUpdate, showToast, onRefreshPage }: CardExchangeItemProps) {
+export default function CardExchangeItem({ exchange, onStatusUpdate, showToast, onRefreshPage, onCopyUrl }: CardExchangeItemProps) {
   const [isChecking, setIsChecking] = useState(false);
   
   // 【优化方案第二阶段】用户上报卡片已使用

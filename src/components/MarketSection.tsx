@@ -6,7 +6,7 @@ import CardExchangeItem from './CardExchangeItem';
 interface CardExchange {
   id: string;
   shareToken: string;
-  actionType: 'ask' | 'exchange' | 'give';
+  actionType: 'ask' | 'exchange';
   actionInitiatorAccount: string;
   actionInitiatorCardId: number;
   actionAcceptCardId: number;
