@@ -48,7 +48,7 @@ export async function POST(request: NextRequest) {
         },
       });
     } catch (dbError) {
-      console.error('保存匹配记录到数据库失败:', dbError);
+      console.error('[队友匹配] 保存匹配记录失败:', dbError);
       // 数据库错误不影响匹配流程，继续执行
     }
     
@@ -79,7 +79,7 @@ export async function POST(request: NextRequest) {
     
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error('标记配对成功错误:', error);
+    console.error('[队友匹配] 标记配对成功失败:', error);
     return NextResponse.json(
       { error: '服务器错误' },
       { status: 500 }

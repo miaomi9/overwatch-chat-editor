@@ -12,7 +12,7 @@ export function getRedisClient(): Redis {
     });
 
     redis.on('error', (error) => {
-      console.error('Redis连接错误:', error);
+      console.error('[Redis] 连接失败:', error);
     });
 
     redis.on('connect', () => {

@@ -5,6 +5,7 @@ import "./globals.css";
 import App from "../app";
 import { ToastProvider } from "@/contexts/ToastContext";
 import { AppreciationProvider } from "@/components/AppreciationModal";
+import { initializeServerTasks } from "@/utils/serverInit";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -20,6 +21,11 @@ export const metadata: Metadata = {
   title: "守望先锋聊天编辑器",
   description: "一个方便创建守望先锋聊天的可视化编辑器",
 };
+
+// 在服务器端初始化后台任务
+if (typeof window === 'undefined') {
+  initializeServerTasks();
+}
 
 export default function RootLayout({
   children,

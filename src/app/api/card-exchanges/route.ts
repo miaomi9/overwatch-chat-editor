@@ -69,9 +69,9 @@ async function fetchCardInfo(shareToken: string) {
 
 // GET - 获取卡片交换列表
 export async function GET(request: NextRequest) {
-  // 速率限制检查 - 每分钟最多40次
+  // 速率限制检查 - 每分钟最多60次
   const getRateLimit = createRateLimit({
-    max: 40,
+    max: 60,
     windowMs: 60 * 1000,
     message: '查询过于频繁，请稍后再试。（不是炸了哦，请稍等一分钟或切换网络！）',
   });
@@ -185,7 +185,7 @@ export async function GET(request: NextRequest) {
       },
     });
   } catch (error) {
-    console.error('获取卡片交换列表失败:', error);
+    console.error('[卡片查询] 查询失败:', error);
     return NextResponse.json(
       { error: '获取卡片交换列表失败' },
       { status: 500 }
@@ -269,6 +269,14 @@ export async function POST(request: NextRequest) {
       );
     }
     
+    // 检查操作类型，拒绝赠送类型的卡片
+    if (cardInfo.action_type === 'give') {
+      return NextResponse.json(
+        { error: '为防止脚本批量获取，暂不支持赠送卡片。建议改用索要模式：查看索要需求，赠送给有需要的玩家。' },
+        { status: 400 }
+      );
+    }
+    
     // 9. 创建卡片交换记录
     const exchange = await prisma.cardExchange.create({
       data: {
@@ -282,7 +290,7 @@ export async function POST(request: NextRequest) {
       },
     });
     
-    console.log(`卡片交换创建成功: ID=${exchange.id}, Token=${shareToken}, Type=${cardInfo.action_type}`);
+    console.log(`[卡片创建] 新卡片已发布 - ID: ${exchange.id}, 类型: ${cardInfo.action_type}`);
     
     return NextResponse.json({
       id: exchange.id,
@@ -295,7 +303,7 @@ export async function POST(request: NextRequest) {
       createdAt: exchange.createdAt,
     });
   } catch (error) {
-    console.error('创建卡片交换失败:', error);
+    console.error('[卡片创建] 创建失败:', error);
     return NextResponse.json(
       { error: '创建卡片交换失败' },
       { status: 500 }

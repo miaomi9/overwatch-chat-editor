@@ -91,7 +91,7 @@ export async function GET(request: NextRequest) {
       },
     });
   } catch (error) {
-    console.error('获取用户模板失败:', error);
+    console.error('[用户模板] 获取列表失败:', error);
     return NextResponse.json(
       { error: '获取模板列表失败' },
       { status: 500 }
@@ -168,7 +168,7 @@ export async function POST(request: NextRequest) {
     });
 
     // 8. 记录成功日志
-    console.log(`用户模板创建成功: ID=${template.id}, IP=${ip}, Name=${name}`);
+    console.log(`[模板创建] 新模板已发布 - ID: ${template.id}, 名称: ${name}`);
 
     return NextResponse.json({
       id: template.id,
@@ -181,7 +181,7 @@ export async function POST(request: NextRequest) {
       needsApproval: true
     }, { status: 201 });
   } catch (error) {
-    console.error('创建用户模板失败:', error);
+    console.error('[用户模板] 创建失败:', error);
     return NextResponse.json(
       { error: '创建模板失败' },
       { status: 500 }

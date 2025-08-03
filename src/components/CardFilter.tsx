@@ -11,6 +11,7 @@ interface CardFilterProps {
   selectedWantCardId: number | null;
   onOfferCardChange: (cardId: number | null) => void;
   onWantCardChange: (cardId: number | null) => void;
+  actionType: string;
 }
 
 // 所有可用的卡片ID
@@ -296,7 +297,7 @@ function SimpleCardSelector({ title, selectedCardId, onCardChange, placeholder, 
   );
 }
 
-export default function CardFilter({ selectedOfferCardId, selectedWantCardId, onOfferCardChange, onWantCardChange }: CardFilterProps) {
+export default function CardFilter({ selectedOfferCardId, selectedWantCardId, onOfferCardChange, onWantCardChange, actionType }: CardFilterProps) {
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
@@ -321,23 +322,37 @@ export default function CardFilter({ selectedOfferCardId, selectedWantCardId, on
         )}
       </div>
       
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
-        <SimpleCardSelector
-          title="我想要的卡片"
-          selectedCardId={selectedOfferCardId}
-          onCardChange={onOfferCardChange}
-          placeholder="选择我想要的卡片"
-          icon="WANT"
-        />
-        
-        <SimpleCardSelector
-          title="我可以给出的卡片"
-          selectedCardId={selectedWantCardId}
-          onCardChange={onWantCardChange}
-          placeholder="选择我可以给出的卡片"
-          icon="OFFER"
-        />
-      </div>
+      {actionType === 'ask' ? (
+        // 索要卡片模式：只显示"我可以给出的卡片"筛选，但实际对应后端的offerCardId
+        <div className="grid grid-cols-1 gap-3">
+          <SimpleCardSelector
+            title="我可以给出的卡片"
+            selectedCardId={selectedOfferCardId}
+            onCardChange={onOfferCardChange}
+            placeholder="选择我可以给出的卡片"
+            icon="OFFER"
+          />
+        </div>
+      ) : (
+        // 交换卡片模式：显示两个筛选器
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+          <SimpleCardSelector
+            title="我想要的卡片"
+            selectedCardId={selectedOfferCardId}
+            onCardChange={onOfferCardChange}
+            placeholder="选择我想要的卡片"
+            icon="WANT"
+          />
+          
+          <SimpleCardSelector
+            title="我可以给出的卡片"
+            selectedCardId={selectedWantCardId}
+            onCardChange={onWantCardChange}
+            placeholder="选择我可以给出的卡片"
+            icon="OFFER"
+          />
+        </div>
+      )}
       
       {(selectedOfferCardId || selectedWantCardId) && (
         <div className="pt-2 border-t border-gray-700/30">

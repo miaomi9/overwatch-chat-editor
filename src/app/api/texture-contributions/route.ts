@@ -83,7 +83,7 @@ export async function GET(request: NextRequest) {
       },
     });
   } catch (error) {
-    console.error('获取纹理贡献列表失败:', error);
+    console.error('[纹理贡献] 获取列表失败:', error);
     return NextResponse.json(
       { error: '获取贡献列表失败' },
       { status: 500 }
@@ -191,7 +191,7 @@ export async function POST(request: NextRequest) {
     });
 
     // 9. 记录成功日志
-    console.log(`纹理贡献创建成功: ID=${contribution.id}, IP=${ip}, TXC=${txcCode}, Name=${chineseName}`);
+    console.log(`[纹理贡献] 新贡献已发布 - ID: ${contribution.id}, 代码: ${txcCode}, 名称: ${chineseName}`);
 
     return NextResponse.json({
       id: contribution.id,
@@ -203,7 +203,7 @@ export async function POST(request: NextRequest) {
       needsApproval: true
     }, { status: 201 });
   } catch (error) {
-    console.error('创建纹理贡献失败:', error);
+    console.error('[纹理贡献] 创建失败:', error);
     return NextResponse.json(
       { error: '提交失败，请稍后重试' },
       { status: 500 }

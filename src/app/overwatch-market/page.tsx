@@ -9,7 +9,7 @@ import CardExchangeItem, { getCardRegionAndNumber } from '@/components/CardExcha
 import CardFilter from '@/components/CardFilter';
 import ActionTypeFilter from '@/components/ActionTypeFilter';
 import AddExchangeModal from '@/components/AddExchangeModal';
-import AnnouncementCarousel from '@/components/AnnouncementCarousel';
+
 import { AppreciationButton } from '@/components/AppreciationModal';
 import AdBanner from '@/components/AdBanner';
 import { PlusIcon, ArrowPathIcon, ExclamationTriangleIcon, CheckIcon, ArrowLeftIcon, ArrowRightIcon, SparklesIcon, HomeIcon, UserGroupIcon } from '@heroicons/react/24/outline';
@@ -17,7 +17,7 @@ import { PlusIcon, ArrowPathIcon, ExclamationTriangleIcon, CheckIcon, ArrowLeftI
 interface CardExchange {
   id: string;
   shareToken: string;
-  actionType: 'ask' | 'exchange' | 'give';
+  actionType: 'ask' | 'exchange';
   actionInitiatorAccount: string;
   actionInitiatorCardId: number;
   actionAcceptCardId: number;
@@ -49,7 +49,7 @@ export default function OverwatchMarketPage() {
   const [shareUrl, setShareUrl] = useState('');
   const [selectedOfferCardId, setSelectedOfferCardId] = useState<number | null>(null);
   const [selectedWantCardId, setSelectedWantCardId] = useState<number | null>(null);
-  const [selectedActionType, setSelectedActionType] = useState<string>('all');
+  const [selectedActionType, setSelectedActionType] = useState<string>('ask');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { toast, showToast, hideToast } = useToast();
 
@@ -57,7 +57,7 @@ export default function OverwatchMarketPage() {
   const loadExchanges = useCallback(async (page = 1) => {
     try {
       setLoading(true);
-      showToast('正在加载卡片交换信息...', 'info');
+      showToast('正在加载卡片信息...', 'info');
       
       const params = new URLSearchParams({
         page: page.toString(),
@@ -65,9 +65,7 @@ export default function OverwatchMarketPage() {
         status: 'active', // 只显示活跃的卡片
       });
       
-      if (selectedActionType !== 'all') {
-        params.append('actionType', selectedActionType);
-      }
+      params.append('actionType', selectedActionType);
       
       if (selectedOfferCardId !== null) {
         params.append('offerCardId', selectedOfferCardId.toString());
@@ -83,7 +81,7 @@ export default function OverwatchMarketPage() {
       if (response.ok) {
         setExchanges(data.exchanges);
         setPagination(data.pagination);
-        showToast('卡片交换信息加载成功', 'success');
+        showToast('卡片信息加载成功', 'success');
       } else {
         showToast(data.error || '加载失败，请重试', 'error');
       }
@@ -170,16 +168,7 @@ export default function OverwatchMarketPage() {
   // 节流提交
   const throttledSubmit = useCallback(createApiThrottle(submitExchange, 1000), [submitExchange]);
 
-  // 复制链接
-  const copyUrl = async (url: string) => {
-    try {
-      await navigator.clipboard.writeText(url);
-      showToast('链接已复制到剪贴板', 'success');
-    } catch (error) {
-      console.error('复制失败:', error);
-      showToast('复制失败，请重试', 'error');
-    }
-  };
+  // 【优化方案第三阶段】移除复制功能，改为跳转机制
 
   // formatDate函数已移到CardExchangeItem组件中
 
@@ -286,22 +275,41 @@ export default function OverwatchMarketPage() {
             </h1>
           </div>
           <p className="text-gray-300 text-sm lg:text-base max-w-2xl mx-auto">
-            分享、交换、收集你的守望先锋卡片
+            发布需求、交换卡片、收集你的守望先锋卡片
           </p>
         </div>
 
-        {/* 轮播公告 */}
-        <AnnouncementCarousel />
+        {/* 使用说明 */}
+        <div className="mb-6 max-w-4xl mx-auto">
+          <div className="bg-gradient-to-r from-blue-600/20 to-purple-600/20 border border-blue-500/30 rounded-xl p-4 lg:p-6">
+            <div className="flex items-start gap-3">
+              <div className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                <ExclamationTriangleIcon className="h-4 w-4 text-white" />
+              </div>
+              <div className="flex-1">
+                <h3 className="text-white font-semibold mb-2 text-sm lg:text-base">新版交换模式说明</h3>
+                <div className="text-gray-300 text-xs lg:text-sm space-y-2">
+                  <p>• <strong className="text-blue-300">交换卡片</strong>：发布你的卡片，寻找愿意交换的玩家</p>
+                  <p>• <strong className="text-purple-300">索要卡片</strong>：发布你需要的卡片，等待其他玩家赠送</p>
+                  <p>• <strong className="text-orange-300">想要赠送？</strong>请寻找"赠送卡片"类型的发布，直接赠送给需要的玩家</p>
+                  <p className="text-yellow-300">💡 为防止脚本批量获取，已取消直接赠送功能</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+
 
         {/* 添加卡片交换按钮 */}
-        <div className="text-center mb-6">
+        <div className="text-center mb-8">
           <button
             onClick={() => setIsModalOpen(true)}
-            className="inline-flex items-center gap-2 px-4 py-2 lg:px-6 lg:py-3 bg-gradient-to-r from-orange-600 to-orange-500 text-white rounded-xl hover:from-orange-500 hover:to-orange-400 transition-all duration-300 font-semibold text-sm lg:text-base shadow-lg hover:shadow-xl transform hover:scale-105 active:scale-95"
+            className="inline-flex items-center gap-3 px-8 py-4 lg:px-12 lg:py-6 bg-gradient-to-r from-orange-600 to-orange-500 text-white rounded-2xl hover:from-orange-500 hover:to-orange-400 transition-all duration-300 font-bold text-lg lg:text-xl shadow-2xl hover:shadow-orange-500/25 transform hover:scale-105 active:scale-95 border-2 border-orange-400/30 hover:border-orange-300/50"
           >
-            <SparklesIcon className="h-4 w-4 lg:h-5 lg:w-5" />
-            <span>分享我的卡片</span>
-            <PlusIcon className="h-3 w-3 lg:h-4 lg:w-4" />
+            <SparklesIcon className="h-6 w-6 lg:h-8 lg:w-8" />
+            <span>发布卡片需求</span>
+            <PlusIcon className="h-5 w-5 lg:h-6 lg:w-6" />
           </button>
         </div>
 
@@ -326,6 +334,7 @@ export default function OverwatchMarketPage() {
               selectedWantCardId={selectedWantCardId}
               onOfferCardChange={setSelectedOfferCardId}
               onWantCardChange={setSelectedWantCardId}
+              actionType={selectedActionType}
             />
             
             {/* 状态信息和刷新按钮 */}
@@ -382,7 +391,7 @@ export default function OverwatchMarketPage() {
             <div className="text-center mt-4">
               <div className="inline-flex items-center gap-2 text-white">
                 <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                <span>正在加载卡片交换信息...</span>
+                <span>正在加载卡片信息...</span>
               </div>
             </div>
           </div>
@@ -393,7 +402,7 @@ export default function OverwatchMarketPage() {
                 <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700/50 rounded-2xl p-8">
                   <ExclamationTriangleIcon className="h-16 w-16 text-gray-400 mx-auto mb-4" />
                   <h3 className="text-xl font-semibold text-white mb-2">暂无卡片</h3>
-                  <p className="text-gray-400">当前筛选条件下没有找到卡片交换信息</p>
+                  <p className="text-gray-400">当前筛选条件下没有找到卡片信息</p>
                 </div>
               </div>
             ) : (
@@ -402,7 +411,6 @@ export default function OverwatchMarketPage() {
                   <CardExchangeItem
                     key={exchange.id}
                     exchange={exchange}
-                    onCopyUrl={copyUrl}
                     onStatusUpdate={handleStatusUpdate}
                     showToast={showToast}
                     onRefreshPage={handleRefreshPage}

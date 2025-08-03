@@ -21,7 +21,7 @@ export async function POST(request: NextRequest) {
     
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error('心跳更新错误:', error);
+    console.error('[心跳API] 更新失败:', error);
     return NextResponse.json(
       { error: '服务器错误' },
       { status: 500 }
@@ -40,11 +40,11 @@ async function cleanupInvalidIpMappings(rooms: any[], region: string = 'cn') {
       // 如果房间不存在或房间为空，清理IP映射
       if (!room || room.players.length === 0) {
         await removeIpRoomMapping(ip, region);
-        console.log(`清理无效IP映射: ${ip} -> ${roomId}`);
+        console.log(`[队列清理] 清理无效映射: ${ip} -> ${roomId}`);
       }
     }
   } catch (error) {
-    console.error('清理无效IP映射错误:', error);
+    console.error('[队列清理] 清理失败:', error);
   }
 }
 
@@ -67,7 +67,7 @@ async function cleanupOfflinePlayers(region: string = 'cn') {
           onlinePlayers.push(player);
         } else {
           // 玩家离线，从房间中移除
-          console.log(`清理离线玩家: ${player.battleTag} from room ${room.id}`);
+          console.log(`[队列清理] 移除离线玩家: ${player.battleTag} from room ${room.id}`);
           hasChanges = true;
         }
       }
@@ -90,7 +90,7 @@ async function cleanupOfflinePlayers(region: string = 'cn') {
       await cleanupInvalidIpMappings(rooms, region);
     }
   } catch (error) {
-    console.error('清理离线玩家错误:', error);
+    console.error('[队列清理] 清理离线玩家失败:', error);
   }
 }
 

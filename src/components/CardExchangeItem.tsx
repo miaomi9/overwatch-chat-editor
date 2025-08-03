@@ -1,11 +1,9 @@
 'use client';
 
 import { 
-  DocumentDuplicateIcon, 
   ArrowRightIcon, 
   ArrowsRightLeftIcon, 
   HandRaisedIcon, 
-  GiftIcon, 
   ClockIcon, 
   SparklesIcon,
   MagnifyingGlassIcon,
@@ -19,7 +17,7 @@ import Image from 'next/image';
 interface CardExchange {
   id: string;
   shareToken: string;
-  actionType: 'ask' | 'exchange' | 'give';
+  actionType: 'ask' | 'exchange';
   actionInitiatorAccount: string;
   actionInitiatorCardId: number;
   actionAcceptCardId: number;
@@ -31,7 +29,6 @@ interface CardExchange {
 
 interface CardExchangeItemProps {
   exchange: CardExchange;
-  onCopyUrl: (url: string) => void;
   onStatusUpdate?: (id: string, newStatus: string) => void;
   showToast?: (message: string, type: 'success' | 'error' | 'warning' | 'info') => void;
   onRefreshPage?: () => void;
@@ -40,7 +37,6 @@ interface CardExchangeItemProps {
 const ACTION_TYPE_LABELS = {
   ask: '索要卡片',
   exchange: '交换卡片',
-  give: '赠送卡片',
 };
 
 const STATUS_LABELS = {
@@ -110,18 +106,18 @@ const formatDate = (dateString: string): string => {
   }
 };
 
-export default function CardExchangeItem({ exchange, onCopyUrl, onStatusUpdate, showToast, onRefreshPage }: CardExchangeItemProps) {
+export default function CardExchangeItem({ exchange, onStatusUpdate, showToast, onRefreshPage }: CardExchangeItemProps) {
   const [isChecking, setIsChecking] = useState(false);
   
-  // 主动检查卡片状态
-  const handleCheckStatus = async () => {
+  // 【优化方案第二阶段】用户上报卡片已使用
+  const handleReportUsed = async () => {
     if (isChecking) return;
     
     setIsChecking(true);
-    showToast?.('正在检查卡片状态...', 'info');
+    showToast?.('正在上报卡片已使用...', 'info');
     
     try {
-      const response = await fetch(`/api/card-exchanges/${exchange.id}/check`, {
+      const response = await fetch(`/api/card-exchanges/${exchange.id}/report-used`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -130,17 +126,20 @@ export default function CardExchangeItem({ exchange, onCopyUrl, onStatusUpdate, 
       
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || '检查失败');
+        throw new Error(errorData.error || '上报失败');
       }
       
       const result = await response.json();
       
-      if (result.statusChanged) {
-        if (result.status === 'claimed') {
-          showToast?.('卡片已被领取，正在刷新页面...', 'warning');
+      if (result.success) {
+        if (result.alreadyReported) {
+          // 处理重复上报的情况
+          showToast?.(result.message, 'info');
+        } else if (result.newStatus === 'claimed') {
+          showToast?.('感谢您的上报！该卡片已收到足够上报，状态已更新为已使用', 'success');
           // 更新本地状态
           if (onStatusUpdate) {
-            onStatusUpdate(exchange.id, result.status);
+            onStatusUpdate(exchange.id, result.newStatus);
           }
           // 延迟刷新页面以确保用户看到提示
           setTimeout(() => {
@@ -148,24 +147,21 @@ export default function CardExchangeItem({ exchange, onCopyUrl, onStatusUpdate, 
           }, 2000);
         } else {
           showToast?.(result.message, 'success');
-          if (onStatusUpdate) {
-            onStatusUpdate(exchange.id, result.status);
-          }
         }
       } else {
-        showToast?.(result.message || '卡片仍然可用', 'success');
+        showToast?.(result.message || '上报失败，请重试', 'error');
       }
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : '检查卡片状态失败，请重试';
+      const errorMessage = error instanceof Error ? error.message : '上报失败，请重试';
       
       // 如果卡片已不是活跃状态，刷新页面
-      if (errorMessage.includes('卡片已不是活跃状态') || errorMessage.includes('检查卡片状态失败')) {
+      if (errorMessage.includes('卡片已不是活跃状态') || errorMessage.includes('卡片不存在')) {
         showToast?.('卡片状态已变更，正在刷新页面...', 'warning');
         setTimeout(() => {
           onRefreshPage?.();
         }, 2000);
       } else {
-        console.error('检查卡片状态失败:', error);
+        console.error('[用户上报] 上报失败:', error);
         showToast?.(errorMessage, 'error');
       }
     } finally {
@@ -182,15 +178,13 @@ export default function CardExchangeItem({ exchange, onCopyUrl, onStatusUpdate, 
         <div className="flex items-center justify-between mb-3 sm:mb-4">
           <span className={`inline-flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full text-xs font-semibold border shadow-sm ${
             exchange.actionType === 'ask' ? 'bg-blue-600/30 text-blue-200 border-blue-500/40' :
-            exchange.actionType === 'exchange' ? 'bg-purple-600/30 text-purple-200 border-purple-500/40' :
-            'bg-green-600/30 text-green-200 border-green-500/40'
+            'bg-purple-600/30 text-purple-200 border-purple-500/40'
           }`}>
             {exchange.actionType === 'ask' ? <MagnifyingGlassIcon className="h-3 w-3" /> : 
-             exchange.actionType === 'exchange' ? <ArrowsRightLeftIcon className="h-3 w-3" /> : 
-             <GiftIcon className="h-3 w-3" />}
+             <ArrowsRightLeftIcon className="h-3 w-3" />}
             <span className="hidden sm:inline">{ACTION_TYPE_LABELS[exchange.actionType]}</span>
             <span className="sm:hidden">
-              {exchange.actionType === 'ask' ? '请求' : exchange.actionType === 'exchange' ? '交换' : '赠送'}
+              {exchange.actionType === 'ask' ? '请求' : '交换'}
             </span>
           </span>
           <div className="flex items-center gap-1.5 sm:gap-2">
@@ -291,17 +285,8 @@ export default function CardExchangeItem({ exchange, onCopyUrl, onStatusUpdate, 
           <div className="space-y-4">
             <div className="text-center text-gray-300 text-sm font-medium">
               <span className="inline-flex items-center gap-2">
-                {exchange.actionType === 'ask' ? (
-                  <>
-                    <HandRaisedIcon className="h-5 w-5 text-blue-400" />
-                    <span>索要卡片</span>
-                  </>
-                ) : (
-                  <>
-                    <GiftIcon className="h-5 w-5 text-green-400" />
-                    <span>赠送卡片</span>
-                  </>
-                )}
+                <HandRaisedIcon className="h-5 w-5 text-blue-400" />
+                <span>索要卡片</span>
               </span>
             </div>
             <div className="flex justify-center">
@@ -322,17 +307,8 @@ export default function CardExchangeItem({ exchange, onCopyUrl, onStatusUpdate, 
                 </div>
                 <div className="text-center">
                   <span className="text-xs text-gray-400 block mb-1 flex items-center justify-center gap-1">
-                    {exchange.actionType === 'ask' ? (
-                      <>
-                        <MagnifyingGlassIcon className="h-3 w-3" />
-                        <span className="hidden sm:inline">寻找</span>
-                      </>
-                    ) : (
-                      <>
-                        <GiftIcon className="h-3 w-3" />
-                        <span className="hidden sm:inline">赠送</span>
-                      </>
-                    )}
+                    <MagnifyingGlassIcon className="h-3 w-3" />
+                    <span className="hidden sm:inline">寻找</span>
                   </span>
                   <span className="text-sm text-orange-300 font-semibold bg-orange-500/10 px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg">{initiatorCardInfo.displayName}</span>
                 </div>
@@ -361,43 +337,70 @@ export default function CardExchangeItem({ exchange, onCopyUrl, onStatusUpdate, 
             
             {exchange.status === 'active' && (
                <button
-                 onClick={handleCheckStatus}
+                 onClick={handleReportUsed}
                  disabled={isChecking}
                  className="px-2 py-1 bg-gradient-to-r from-red-600/90 to-red-700/90 text-white rounded-lg text-xs hover:from-red-500 hover:to-red-600 transition-all duration-300 flex items-center gap-1 hover:scale-105 font-semibold shadow-lg hover:shadow-red-500/25 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 whitespace-nowrap"
-                 title="上报已使用"
+                 title="如果卡片已失效，点击上报帮助其他用户"
                >
                  {isChecking ? (
                    <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white"></div>
                  ) : (
                    <ExclamationTriangleIcon className="h-3 w-3" />
                  )}
-                 <span className="text-xs">{isChecking ? '检查中' : '上报已使用'}</span>
+                 <span className="text-xs">{isChecking ? '上报中' : '上报已使用'}</span>
                </button>
              )}
           </div>
         </div>
+        {/* 【优化方案第三阶段】移除复制功能，改为跳转机制收集用户行为数据 */}
         <div className="flex gap-2 sm:gap-3">
           <button
-            onClick={() => onCopyUrl(exchange.originalUrl)}
-            className="flex-1 px-3 sm:px-4 py-2 sm:py-2.5 bg-gradient-to-r from-orange-600/90 to-orange-700/90 text-white rounded-lg sm:rounded-xl text-xs sm:text-sm hover:from-orange-500 hover:to-orange-600 transition-all duration-300 flex items-center justify-center gap-1.5 sm:gap-2 hover:scale-105 font-semibold shadow-lg hover:shadow-orange-500/25"
-            title="复制分享链接"
-          >
-            <DocumentDuplicateIcon className="h-3 w-3 sm:h-4 sm:w-4" />
-            <span className="hidden sm:inline">复制链接</span>
-            <span className="sm:hidden">复制</span>
-          </button>
-          
-          <a
-            href={exchange.originalUrl}
-            target="_blank"
-            rel="noopener noreferrer"
+            onClick={async () => {
+              try {
+                // 记录用户访问行为并添加到检测队列
+                const response = await fetch(`/api/card-exchanges/${exchange.id}/visit`, {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                  },
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok && result.success && (!result.status || result.status === 'active')) {
+                  // 卡片有效（没有status字段或status为active），打开卡片链接
+                  window.open(exchange.originalUrl, '_blank', 'noopener,noreferrer');
+                } else {
+                  // 卡片无效或非活跃状态，显示提示信息
+                  showToast?.(result.message || '卡片已失效', 'warning');
+                  // 如果卡片状态已变更，刷新页面
+                  if (result.status === 'claimed' || result.status === 'expired' || result.message?.includes('已被领取') || result.message?.includes('已过期') || result.message?.includes('无效')) {
+                    setTimeout(() => {
+                      onRefreshPage?.();
+                    }, 2000);
+                  }
+                }
+              } catch (error) {
+                console.error('[用户访问] 记录失败:', error);
+                showToast?.('访问失败，请重试', 'error');
+              }
+            }}
             className="flex-1 px-3 sm:px-4 py-2 sm:py-2.5 bg-gradient-to-r from-blue-600/90 to-blue-700/90 text-white rounded-lg sm:rounded-xl text-xs sm:text-sm hover:from-blue-500 hover:to-blue-600 transition-all duration-300 flex items-center justify-center gap-1.5 sm:gap-2 hover:scale-105 font-semibold shadow-lg hover:shadow-blue-500/25"
-            title="直接打开链接"
+            title={exchange.actionType === 'ask' ? '赠送卡片' : '获取卡片并记录访问'}
           >
             <ArrowRightIcon className="h-3 w-3 sm:h-4 sm:w-4" />
-            <span className="hidden sm:inline">打开链接</span>
-            <span className="sm:hidden">打开</span>
-          </a>
+            {exchange.actionType === 'ask' ? (
+              <>
+                <span className="hidden sm:inline">赠送</span>
+                <span className="sm:hidden">赠送</span>
+              </>
+            ) : (
+              <>
+                <span className="hidden sm:inline">交换卡片</span>
+                <span className="sm:hidden">获取</span>
+              </>
+            )}
+          </button>
         </div>
       </div>
     </div>

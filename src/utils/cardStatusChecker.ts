@@ -91,7 +91,7 @@ async function checkSingleCardStatus(exchange: any) {
         },
       });
     } catch (updateError) {
-      console.error(`更新检查时间失败:`, updateError);
+      console.error(`[定时任务] 更新检查时间失败:`, updateError);
     }
     throw error; // 重新抛出错误供上层处理
   }
@@ -217,9 +217,12 @@ export async function checkAllActiveCards() {
 }
 
 // 启动定时检查任务（优化版）
+// 【优化方案第一阶段】注释定时检测功能，减少对暴雪API的频繁调用
 export function startCardStatusChecker() {
-  console.log('启动卡片状态检查器（优化版）...');
+  console.log('[系统启动] 卡片状态检查器已暂停（优化方案）');
   
+  // 注释原有的定时检测逻辑
+  /*
   let isChecking = false;
   
   // 检查函数包装器，防止重复执行
@@ -247,16 +250,57 @@ export function startCardStatusChecker() {
   
   // 每5分钟检查一次（提高频率以应对大量卡片）
   const interval = setInterval(safeCheck, 5 * 60 * 1000); // 5分钟
+  */
   
-  // 返回清理函数
+  // 返回空的清理函数
   return () => {
-    console.log('停止卡片状态检查器');
-    clearInterval(interval);
+    console.log('[系统关闭] 卡片状态检查器已停止');
   };
 }
 
-// 清理过期的卡片交换（超过7天未检查的标记为过期）
-// 智能清理过期卡片（优化版）
+// 【优化方案第一阶段】每日清理任务函数
+export async function dailyCardCleanup() {
+  try {
+    const startTime = Date.now();
+    console.log('[定时任务] 开始执行每日卡片清理');
+    
+    // 计算24小时前的时间
+    const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+    
+    // 将存在时间超过1天且状态为active的卡片标记为expired
+    const result = await prisma.cardExchange.updateMany({
+      where: {
+        status: 'active',
+        createdAt: {
+          lt: oneDayAgo,
+        },
+      },
+      data: {
+        status: 'expired',
+        updatedAt: new Date(),
+      },
+    });
+    
+    // 统计当前活跃卡片数量
+    const activeCount = await prisma.cardExchange.count({
+      where: { status: 'active' }
+    });
+    
+    const duration = Date.now() - startTime;
+    console.log(`[定时任务] 每日清理完成 - 清理: ${result.count}张, 活跃: ${activeCount}张, 耗时: ${duration}ms`);
+    
+    return {
+      cleaned: result.count,
+      activeRemaining: activeCount,
+      duration
+    };
+  } catch (error) {
+    console.error('[定时任务] 每日清理失败:', error);
+    throw error;
+  }
+}
+
+// 原有的智能清理过期卡片函数（保留备用）
 export async function cleanupExpiredCards() {
   try {
     const startTime = Date.now();
@@ -332,7 +376,7 @@ export async function cleanupExpiredCards() {
     });
     
     const duration = Date.now() - startTime;
-    console.log(`清理完成: 总共清理 ${totalCleaned} 个过期卡片，当前活跃卡片 ${activeCount} 个，耗时 ${duration}ms`);
+    console.log(`原有清理完成: 总共清理 ${totalCleaned} 个过期卡片，当前活跃卡片 ${activeCount} 个，耗时 ${duration}ms`);
     
     return {
       cleaned: totalCleaned,
@@ -346,26 +390,49 @@ export async function cleanupExpiredCards() {
 }
 
 // 启动智能清理任务（优化版）
+// 【优化方案第一阶段】每日清理任务 - 每天0点自动将存在时间超过1天的卡片标记为已使用
 export function startCleanupTask() {
-  console.log('启动智能过期卡片清理任务...');
+  console.log('[系统启动] 每日卡片清理任务已启动');
   
   // 立即执行一次清理
-  cleanupExpiredCards().catch(error => {
-    console.error('初始清理失败:', error);
+  dailyCardCleanup().catch(error => {
+    console.error('[系统启动] 初始清理失败:', error);
   });
   
-  // 每12小时清理一次（增加频率，减少单次处理量）
-  const interval = setInterval(async () => {
-    try {
-      await cleanupExpiredCards();
-    } catch (error) {
-      console.error('定时清理失败:', error);
-    }
-  }, 12 * 60 * 60 * 1000); // 12小时
+  // 设置每日零点执行的递归函数
+  const scheduleNextMidnight = () => {
+    const now = new Date();
+    const tomorrow = new Date(now);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    tomorrow.setHours(0, 0, 0, 0);
+    const timeToMidnight = tomorrow.getTime() - now.getTime();
+    
+    const hours = Math.floor(timeToMidnight / (1000 * 60 * 60));
+    const minutes = Math.floor((timeToMidnight % (1000 * 60 * 60)) / (1000 * 60));
+    console.log(`[定时任务] 下次零点清理: ${hours}小时${minutes}分钟后`);
+    
+    // 设置到下一个0点的定时器
+    const midnightTimeout = setTimeout(async () => {
+      try {
+        console.log('[定时任务] 执行零点清理');
+        await dailyCardCleanup();
+      } catch (error) {
+        console.error('[定时任务] 零点清理失败:', error);
+      }
+      
+      // 递归设置下一个零点
+      scheduleNextMidnight();
+    }, timeToMidnight);
+    
+    return midnightTimeout;
+  };
+  
+  // 开始调度
+  const currentTimeout = scheduleNextMidnight();
   
   // 返回清理函数
   return () => {
-    console.log('停止智能过期卡片清理任务');
-    clearInterval(interval);
+    console.log('[系统关闭] 每日卡片清理任务已停止');
+    clearTimeout(currentTimeout);
   };
 }

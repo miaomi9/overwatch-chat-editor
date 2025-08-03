@@ -1,4 +1,5 @@
 import { startCardStatusChecker, startCleanupTask } from './cardStatusChecker';
+import { startBackgroundWorker, stopBackgroundWorker } from './backgroundWorker';
 
 // 服务器初始化标志
 let isInitialized = false;
@@ -10,7 +11,7 @@ export function initializeServerTasks() {
     return;
   }
   
-  console.log('初始化服务器端任务...');
+  console.log('[系统启动] 正在初始化后台任务');
   
   try {
     // 启动卡片状态检查器
@@ -21,10 +22,14 @@ export function initializeServerTasks() {
     const stopCleanup = startCleanupTask();
     cleanupFunctions.push(stopCleanup);
     
+    // 启动后台队列处理器
+    startBackgroundWorker();
+    cleanupFunctions.push(stopBackgroundWorker);
+    
     isInitialized = true;
-    console.log('服务器端任务初始化完成');
+    console.log('[系统启动] 后台任务初始化完成');
   } catch (error) {
-    console.error('初始化服务器端任务失败:', error);
+    console.error('[系统启动] 后台任务初始化失败:', error);
   }
 }
 
@@ -34,19 +39,19 @@ export function cleanupServerTasks() {
     return;
   }
   
-  console.log('清理服务器端任务...');
+  console.log('[系统关闭] 正在清理后台任务');
   
   cleanupFunctions.forEach(cleanup => {
     try {
       cleanup();
     } catch (error) {
-      console.error('清理任务时发生错误:', error);
+      console.error('[系统关闭] 清理任务失败:', error);
     }
   });
   
   cleanupFunctions = [];
   isInitialized = false;
-  console.log('服务器端任务清理完成');
+  console.log('[系统关闭] 后台任务清理完成');
 }
 
 // 进程退出时清理

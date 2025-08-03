@@ -3,8 +3,6 @@
 import { 
   ArrowsRightLeftIcon, 
   HandRaisedIcon, 
-  GiftIcon, 
-  Squares2X2Icon,
   MagnifyingGlassIcon 
 } from '@heroicons/react/24/outline';
 
@@ -16,20 +14,12 @@ interface ActionTypeFilterProps {
 export default function ActionTypeFilter({ selectedActionType, onActionTypeChange }: ActionTypeFilterProps) {
   const actionTypes = [
     { 
-      value: 'all', 
-      label: '全部类型', 
-      icon: <Squares2X2Icon className="w-6 h-6 lg:w-7 lg:h-7" />,
-      color: 'from-gray-600 to-gray-700',
-      hoverColor: 'from-gray-500 to-gray-600',
-      description: '查看所有卡片交换'
-    },
-    { 
       value: 'ask', 
-      label: '索要卡片', 
+      label: '赠送卡片', 
       icon: <MagnifyingGlassIcon className="w-6 h-6 lg:w-7 lg:h-7" />,
       color: 'from-blue-600 to-blue-700',
       hoverColor: 'from-blue-500 to-blue-600',
-      description: '💡 推荐：高效匹配需求'
+      description: '寻找愿意赠送的玩家'
     },
     { 
       value: 'exchange', 
@@ -37,21 +27,13 @@ export default function ActionTypeFilter({ selectedActionType, onActionTypeChang
       icon: <ArrowsRightLeftIcon className="w-6 h-6 lg:w-7 lg:h-7" />,
       color: 'from-purple-600 to-purple-700',
       hoverColor: 'from-purple-500 to-purple-600',
-      description: '⭐ 推荐：公平互换'
-    },
-    { 
-      value: 'give', 
-      label: '赠送卡片', 
-      icon: <GiftIcon className="w-6 h-6 lg:w-7 lg:h-7" />,
-      color: 'from-green-600 to-green-700',
-      hoverColor: 'from-green-500 to-green-600',
-      description: '建议改用索要/交换模式'
+      description: '寻找愿意交换的玩家'
     },
   ];
 
   return (
     <div className="w-full">
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 lg:gap-4">
+      <div className="grid grid-cols-2 gap-2 sm:gap-3 lg:gap-4">
         {actionTypes.map((actionType) => (
           <button
             key={actionType.value}

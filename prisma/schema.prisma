@@ -85,7 +85,30 @@ model CardExchange {
   createdAt               DateTime @default(now())
   updatedAt               DateTime @updatedAt
   
+  // 关联关系
+  reports                 CardReport[]
+  
   @@map("card_exchanges")
+}
+
+model CardReport {
+  id              String   @id @default(cuid())
+  cardExchangeId  String   // 卡片交换ID
+  reporterIp      String   // 上报者IP地址
+  reportType      ReportType // 上报类型
+  reportedAt      DateTime @default(now()) // 上报时间
+  createdAt       DateTime @default(now())
+  
+  // 关联关系
+  cardExchange    CardExchange @relation(fields: [cardExchangeId], references: [id], onDelete: Cascade)
+  
+  @@unique([cardExchangeId, reporterIp]) // 防止同一IP重复上报同一卡片
+  @@map("card_reports")
+}
+
+enum ReportType {
+  used    // 已被使用
+  invalid // 无效卡片
 }
 
 model TeammateMatchRecord {

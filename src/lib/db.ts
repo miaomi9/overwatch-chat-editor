@@ -22,7 +22,7 @@ export async function testConnection() {
     console.log('数据库连接成功');
     return true;
   } catch (error) {
-    console.error('数据库连接失败:', error);
+    console.error('[数据库] 连接失败:', error);
     return false;
   }
 }
@@ -33,7 +33,7 @@ export async function disconnectDatabase() {
     await prisma.$disconnect();
     console.log('数据库连接已关闭');
   } catch (error) {
-    console.error('关闭数据库连接时出错:', error);
+    console.error('[数据库] 关闭连接失败:', error);
   }
 }
 

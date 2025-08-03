@@ -13,6 +13,7 @@ interface AddExchangeModalProps {
 export default function AddExchangeModal({ isOpen, onClose, onSubmit, isSubmitting }: AddExchangeModalProps) {
   const [shareUrl, setShareUrl] = useState('');
   const [step, setStep] = useState<'input' | 'help'>('input');
+  const [requestType, setRequestType] = useState<'ask' | 'exchange'>('ask');
 
   // 验证链接格式的函数
   const isValidShareUrl = (url: string): boolean => {
@@ -33,6 +34,7 @@ export default function AddExchangeModal({ isOpen, onClose, onSubmit, isSubmitti
   const handleClose = () => {
     setShareUrl('');
     setStep('input');
+    setRequestType('ask');
     onClose();
   };
 
@@ -56,8 +58,8 @@ export default function AddExchangeModal({ isOpen, onClose, onSubmit, isSubmitti
                 <PlusIcon className="h-5 w-5 sm:h-6 sm:w-6" />
               </div>
               <div className="min-w-0 flex-1">
-                <h2 className="text-lg sm:text-xl font-bold truncate">添加卡片交换</h2>
-                <p className="text-orange-100 text-xs sm:text-sm truncate">分享你的守望先锋集卡链接</p>
+                <h2 className="text-lg sm:text-xl font-bold truncate">发布卡片需求</h2>
+                <p className="text-orange-100 text-xs sm:text-sm truncate">发布你的交换需求或索要需求</p>
               </div>
             </div>
             <button
@@ -73,17 +75,57 @@ export default function AddExchangeModal({ isOpen, onClose, onSubmit, isSubmitti
         <div className="p-4 sm:p-6">
           {step === 'input' ? (
             <div className="space-y-6">
+              {/* 需求类型选择 */}
+              <div className="space-y-3">
+                <label className="block text-white font-medium text-sm sm:text-base">
+                  需求类型
+                </label>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setRequestType('ask')}
+                    className={`px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${
+                      requestType === 'ask'
+                        ? 'bg-purple-600 text-white border-2 border-purple-500'
+                        : 'bg-gray-700 text-gray-300 border-2 border-gray-600 hover:bg-gray-600'
+                    }`}
+                  >
+                    索要卡片
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setRequestType('exchange')}
+                    className={`px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${
+                      requestType === 'exchange'
+                        ? 'bg-blue-600 text-white border-2 border-blue-500'
+                        : 'bg-gray-700 text-gray-300 border-2 border-gray-600 hover:bg-gray-600'
+                    }`}
+                  >
+                    交换卡片
+                  </button>
+                </div>
+                <p className="text-gray-400 text-xs">
+                  {requestType === 'ask' 
+                    ? '发布你需要的卡片，等待其他玩家赠送' 
+                    : '发布你拥有的卡片，寻找愿意交换的玩家'
+                  }
+                </p>
+              </div>
+              
               {/* 输入区域 */}
               <div className="space-y-3">
                 <label className="block text-white font-medium text-sm sm:text-base">
-                  分享链接
+                  卡片链接
                 </label>
                 <div className="relative">
                   <input
                     type="text"
                     value={shareUrl}
                     onChange={(e) => setShareUrl(e.target.value)}
-                    placeholder="粘贴你的守望先锋集卡分享链接..."
+                    placeholder={requestType === 'ask' 
+                      ? '粘贴你需要的卡片链接...' 
+                      : '粘贴你拥有的卡片链接...'
+                    }
                     className={`w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-gray-700 border rounded-lg sm:rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 transition-all duration-200 text-sm sm:text-base ${
                       shareUrl && !isValidShareUrl(shareUrl) 
                         ? 'border-red-400 focus:ring-red-500' 
@@ -113,14 +155,30 @@ export default function AddExchangeModal({ isOpen, onClose, onSubmit, isSubmitti
                   </div>
                 )}
               </div>
-              {/* 交换建议提示 */}
-              <div className="bg-gradient-to-r from-blue-500/10 to-purple-500/10 border border-blue-500/30 rounded-lg sm:rounded-xl p-3 sm:p-4">
+              {/* 发布说明提示 */}
+              <div className={`bg-gradient-to-r border rounded-lg sm:rounded-xl p-3 sm:p-4 ${
+                requestType === 'ask' 
+                  ? 'from-purple-500/10 to-pink-500/10 border-purple-500/30'
+                  : 'from-blue-500/10 to-cyan-500/10 border-blue-500/30'
+              }`}>
                 <div className="flex items-start gap-2.5 sm:gap-3">
-                  <InformationCircleIcon className="h-4 w-4 sm:h-5 sm:w-5 text-blue-400 mt-0.5 flex-shrink-0" />
+                  <InformationCircleIcon className={`h-4 w-4 sm:h-5 sm:w-5 mt-0.5 flex-shrink-0 ${
+                    requestType === 'ask' ? 'text-purple-400' : 'text-blue-400'
+                  }`} />
                   <div className="text-xs sm:text-sm min-w-0">
-                    <p className="text-blue-300 font-medium mb-1">交换建议</p>
-                    <p className="text-blue-200 leading-relaxed mb-2">优先推荐【索要卡片】和【交换卡片】模式，让卡片流通更高效！</p>
-                    <p className="text-blue-200 leading-relaxed">想要赠送？试试在【索要卡片】中寻找需要你卡片的玩家，互动性更强且能避免恶意倒卖。</p>
+                    <p className={`font-medium mb-1 ${
+                      requestType === 'ask' ? 'text-purple-300' : 'text-blue-300'
+                    }`}>
+                      {requestType === 'ask' ? '索要卡片说明' : '交换卡片说明'}
+                    </p>
+                    <p className={`leading-relaxed ${
+                      requestType === 'ask' ? 'text-purple-200' : 'text-blue-200'
+                    }`}>
+                      {requestType === 'ask' 
+                        ? '发布你需要的卡片链接，其他玩家看到后可以选择赠送给你'
+                        : '发布你拥有的卡片链接，寻找愿意与你交换的玩家'
+                      }
+                    </p>
                   </div>
                 </div>
               </div>
@@ -129,7 +187,7 @@ export default function AddExchangeModal({ isOpen, onClose, onSubmit, isSubmitti
                 <div className="flex items-start gap-2.5 sm:gap-3">
                   <InformationCircleIcon className="h-4 w-4 sm:h-5 sm:w-5 text-blue-400 mt-0.5 flex-shrink-0" />
                   <div className="text-xs sm:text-sm min-w-0">
-                    <p className="text-blue-300 font-medium mb-1">如何获取分享链接？</p>
+                    <p className="text-blue-300 font-medium mb-1">如何获取卡片链接？</p>
                     <p className="text-blue-200 leading-relaxed">在守望先锋官方页面复制包含 shareToken= 的完整链接</p>
                   </div>
                 </div>
@@ -153,13 +211,13 @@ export default function AddExchangeModal({ isOpen, onClose, onSubmit, isSubmitti
                   {isSubmitting ? (
                     <>
                       <div className="animate-spin rounded-full h-3 w-3 sm:h-4 sm:w-4 border-b-2 border-white"></div>
-                      <span className="hidden sm:inline">添加中...</span>
-                      <span className="sm:hidden">添加中</span>
+                      <span className="hidden sm:inline">发布中...</span>
+                      <span className="sm:hidden">发布中</span>
                     </>
                   ) : (
                     <>
-                      <span className="hidden sm:inline">立即添加</span>
-                      <span className="sm:hidden">添加</span>
+                      <span className="hidden sm:inline">发布需求</span>
+                      <span className="sm:hidden">发布</span>
                     </>
                   )}
                 </button>
