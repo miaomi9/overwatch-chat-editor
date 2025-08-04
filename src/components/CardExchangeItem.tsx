@@ -109,6 +109,8 @@ const formatDate = (dateString: string): string => {
 
 export default function CardExchangeItem({ exchange, onStatusUpdate, showToast, onRefreshPage, onCopyUrl }: CardExchangeItemProps) {
   const [isChecking, setIsChecking] = useState(false);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [pendingUrl, setPendingUrl] = useState<string>('');
   
   // 【优化方案第二阶段】用户上报卡片已使用
   const handleReportUsed = async () => {
@@ -355,8 +357,9 @@ export default function CardExchangeItem({ exchange, onStatusUpdate, showToast, 
                 const result = await response.json();
                 
                 if (response.ok && result.success && (!result.status || result.status === 'active')) {
-                  // 卡片有效（没有status字段或status为active），打开卡片链接
-                  window.open(exchange.originalUrl, '_blank', 'noopener,noreferrer');
+                  // 卡片有效，显示确认弹窗
+                  setPendingUrl(exchange.originalUrl);
+                  setShowConfirmModal(true);
                 } else {
                   // 卡片无效或非活跃状态，显示提示信息
                   showToast?.(result.message || '卡片已失效', 'warning');
@@ -410,6 +413,46 @@ export default function CardExchangeItem({ exchange, onStatusUpdate, showToast, 
           )}
         </div>
       </div>
+
+      {/* 确认跳转弹窗 */}
+      {showConfirmModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-sm w-full mx-4">
+            <div className="p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                确认跳转
+              </h3>
+              <p className="text-gray-600 mb-6">
+                {exchange.actionType === 'ask' 
+                  ? '确定要跳转到赠送页面吗？' 
+                  : '确定要跳转到交换页面吗？'
+                }
+              </p>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => {
+                    setShowConfirmModal(false);
+                    setPendingUrl('');
+                  }}
+                  className="flex-1 px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition-colors"
+                >
+                  取消
+                </button>
+                <button
+                  onClick={() => {
+                    window.open(pendingUrl, '_blank', 'noopener,noreferrer');
+                    setShowConfirmModal(false);
+                    setPendingUrl('');
+                  }}
+                  className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                >
+                  确认跳转
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
